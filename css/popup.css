@@ -1,0 +1,56 @@
+#cb_extension_container {
+    height: 600px;
+    width: 400px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#cb_signin_container {
+}
+
+#cb_extension_container button {
+    width: 200px;
+    height: 50px;
+    color: #fff;
+    background-color: #1652f0;
+    border: 1px solid #1652f0;
+    outline: none;
+    font-size: 14px;
+    border-radius: 4px;
+}
+
+#cb_submit_transaction_container {
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+}
+
+#cb_submission_form_header {
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+#cb_submit_transaction_form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#cb_submit_transaction_form input {
+    width: 85%;
+    height: 35px;
+    margin-bottom: 20px;
+    font-size: 14px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    outline: none;
+    padding-left: 10px;
+}
+
+#cb_submit_transaction_button {
+}
+
+#cb_submit_transaction_form button {
+    margin-top: 10px;
+}

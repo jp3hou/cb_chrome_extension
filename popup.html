@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <script src="js/jquery-3.4.1.min.js"></script>
+        <script src="js/popup.js"></script>
+        <link rel="stylesheet" text="text/css" href="css/popup.css">
+    </head>
+    <body>
+        <div id="cb_extension_container">
+            <div id="cb_signin_container" style="display: none;">
+                <button id="cb_signin">Sign in</button>
+            </div>
+
+            <!--<button id="revoke_cb_token">Log Out</button>-->
+            <!--<h2 id="greet">Hello World~ </h2>-->
+            <!--<input type="text" id="cb_name">-->
+
+            <div id="cb_submit_transaction_container">
+                <div id="cb_submission_form_header">
+                    <h1>Send your compliments to the chef!</h1>
+                </div>
+                <form id="cb_submit_transaction_form" method="post">
+                    <input name="recipient_name" placeholder="Recipient Name">
+                    <input name="recipient_address" placeholder="Email or Hash Address">
+                    <input name="amount" placeholder="Amount">
+                    <input name="currency" placeholder="Currency">
+                    <input name="note" placeholder="Add a note!">
+                    <button id="cb_submit_transaction_button">Send</button>
+                </form>
+            </div>
+        </div>
+    </body>
+</html>
