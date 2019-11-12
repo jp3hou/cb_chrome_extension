@@ -88,7 +88,7 @@ function revokeToken() {
 }
 
 function refreshToken () {
-  $('#cb_message_container').hide();
+  hideEverything();
   $('.loader').show();
   $.ajax({
     url: 'https://api.coinbase.com/oauth/token',
@@ -104,6 +104,8 @@ function refreshToken () {
         'coinbase_access_token': response.access_token,
         'coinbase_refresh_token': response.refresh_token
       });
+      coinbase_access_token = response.access_token;
+      coinbase_refresh_token = response.refresh_token;
       hideEverything();
       $('#cb_submit_transaction_container').fadeIn(1000);
     },
