@@ -26,6 +26,12 @@ function onSuccessfulOAuthHandshake(response) {
     'coinbase_access_token': response.access_token,
     'coinbase_refresh_token': response.refresh_token
   });
+  chrome.notifications.create({
+    type: 'basic',
+    title: 'Signed In!',
+    iconUrl: 'images/icon48.png',
+    message: 'You have successfully signed into your Coinbase Account!'
+  });
 }
 
 function validateRedirectUri(redirect_uri) {

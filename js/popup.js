@@ -32,7 +32,7 @@ function randomlyGenerateFormMessage() {
 
 function sendTransaction(e) {
   e.preventDefault();
-  hideEverything();
+  clearView();
   $('.loader').show();
 
   $.ajax({
@@ -47,7 +47,7 @@ function sendTransaction(e) {
     type: "POST",
     headers: {'Authorization': `Bearer ${coinbase_access_token}`},
     success: function () {
-      hideEverything();
+      clearView();
       $('#cb_message').text('Sent!');
       $('#cb_message_container').show().fadeOut(1000);
     },
@@ -58,7 +58,7 @@ function sendTransaction(e) {
   });
 }
 
-function hideEverything() {
+function clearView() {
   $('#cb_signin_container').hide();
   $('#cb_message_container').hide();
   $('#cb_submit_transaction_container').hide();
@@ -67,7 +67,7 @@ function hideEverything() {
 }
 function onSuccessfulTokenRevocation() {
   chrome.storage.local.remove(['coinbase_access_token', 'coinbase_refresh_token']);
-  hideEverything();
+  clearView();
   $('#cb_message').text('Revoked!');
   $('#cb_message_container').show().fadeOut(1000, function () {
     $('#cb_signin_container').show();
@@ -75,6 +75,7 @@ function onSuccessfulTokenRevocation() {
 }
 
 function revokeToken() {
+  clearView();
   $('.loader').show();
   $.ajax({
     url: 'https://api.coinbase.com/oauth/revoke',
@@ -88,7 +89,7 @@ function revokeToken() {
 }
 
 function refreshToken () {
-  hideEverything();
+  clearView();
   $('.loader').show();
   $.ajax({
     url: 'https://api.coinbase.com/oauth/token',
@@ -106,11 +107,14 @@ function refreshToken () {
       });
       coinbase_access_token = response.access_token;
       coinbase_refresh_token = response.refresh_token;
-      hideEverything();
-      $('#cb_submit_transaction_container').fadeIn(1000);
+      clearView();
+      $('#cb_message').text('Revoked!');
+      $('#cb_message_container').show().fadeOut(1000, function () {
+        $('#cb_submit_transaction_container').show();
+      });
     },
     error: function (error) {
-      hideEverything();
+      clearView();
       $('#cb_message').text(`Error refreshing token. Status ${error.status}`);
       $('#cb_message_container').show();
     }
@@ -130,11 +134,11 @@ function getAccounts() {
         $('#currencies_dropdown').append(`<option val="${c.id}-${c.balance.currency}">${c.balance.amount} ${c.balance.currency}</option>`);
       }
 
-      hideEverything();
+      clearView();
       showTransactionForm();
     },
     error: function (error) {
-      hideEverything();
+      clearView();
       if (error.status === 401 && coinbase_refresh_token) {
         $('#cb_message').text(`Token invalid. Refresh Token?`);
         $('#cb_refresh_token_button').bind('click', refreshToken);
@@ -142,7 +146,7 @@ function getAccounts() {
         $('#cb_message_container').show();
 
       } else {
-        hideEverything();
+        clearView();
         $('#cb_signin_container').fadeIn(1000);
       }
     }
