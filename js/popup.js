@@ -1,4 +1,11 @@
-const HEADER_MESSAGES = ["Show your support!", "Send a token of your appreciation!", "Thank someone for their work!", "Send your compliments to the chef!"];
+const HEADER_MESSAGES = [
+  "Send a penny for their thoughts!",
+  "Show your support!",
+  "Send a token of your appreciation!",
+  "Thank someone for their work!",
+  "Send your compliments to the chef!",
+  "Give someone your 2 cents!"
+];
 
 let coinbase_access_token;
 
@@ -11,6 +18,7 @@ chrome.storage.local.get('coinbase_access_token', function (result) {
 function onSuccessfulTokenRevocation() {
   chrome.storage.local.remove(['coinbase_access_token', 'coinbase_refresh_token']);
   coinbase_access_token = undefined;
+  $('.loader').hide();
   $('#cb_submit_transaction_container').hide();
   $('#cb_message').text('Revoked!');
   $('#cb_message_container').show().fadeOut(1000, function () {
@@ -20,6 +28,7 @@ function onSuccessfulTokenRevocation() {
 
 function revokeToken(e) {
   e.preventDefault();
+  $('.loader').show();
   $.ajax({
     url: 'https://api.coinbase.com/oauth/revoke',
     data: {token: coinbase_access_token},
@@ -66,6 +75,29 @@ function sendTransaction(e) {
   });
 }
 
+function getAccounts() {
+  $.ajax({
+    url: 'https://api.coinbase.com/v2/accounts',
+    type: 'GET',
+    headers: {'Authorization': `Bearer ${coinbase_access_token}`},
+    success: function (response) {
+      let currencies = response.data;
+
+      for (let i = 0; i < currencies.length - 1; i++) {
+        let c = currencies[i];
+        $('#currencies_dropdown').append(`<option val="${c.id}-${c.balance.currency}">${c.balance.amount} ${c.balance.currency}</option>`);
+      }
+
+      $('.loader').hide();
+      showTransactionForm();
+    },
+    error: function (error) {
+      $('#cb_submit_transaction_form').hide();
+      $('#cb_message').text(`Something went wrong: ${error.message}`);
+    }
+  });
+}
+
 function showTransactionForm() {
   $('#cb_signin_container').hide();
   $('#cb_submit_transaction_container').show();
@@ -83,7 +115,8 @@ window.onload = $(function () {
   $('#cb_revoke_token_access_button').bind("click", revokeToken);
 
   if (coinbase_access_token !== undefined) {
-    showTransactionForm();
+    $('.loader').show();
+    getAccounts();
   } else {
     showSigninView();
   }

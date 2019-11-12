@@ -13,6 +13,8 @@ function onReceivedRedirectUrl(redirect_url) {
 
 function showSuccessfulSigninView() {
   $('#cb_signin_container').hide();
+  $('.loader').hide();
+
   $('#cb_message').text('Successfully signed in!');
   $('#cb_message_container').show().fadeOut(1000, function () {
     $('#cb_submit_transaction_container').fadeIn(500);
@@ -20,6 +22,8 @@ function showSuccessfulSigninView() {
 }
 
 function showUnsuccessfulSigninView() {
+  $('.loader').hide();
+
   $('#cb_message').text('Sign in failed :(');
   $('#cb_message_container').show().fadeOut(1500, function () {
     $('#cb_signin_container').show().fadeIn(500);
@@ -27,8 +31,11 @@ function showUnsuccessfulSigninView() {
 }
 
 function signIn() {
+  $('#cb_signin_container').hide();
+  $('.loader').show();
+
   let url = `https://www.coinbase.com/oauth/authorize?client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}` +
-    '&response_type=code&scope=wallet:user:read,wallet:accounts:read,wallet:transactions:send&meta[send_limit_amount]=1&meta[send_limit_currency]=USD&meta[send_limit_period]=day';
+    '&response_type=code&scope=wallet:accounts:read,wallet:transactions:send&meta[send_limit_amount]=1&meta[send_limit_currency]=USD&meta[send_limit_period]=day';
   chrome.identity.launchWebAuthFlow(
     {
       'url': url,

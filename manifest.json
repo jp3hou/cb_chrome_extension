@@ -7,12 +7,13 @@
     "default_popup": "popup.html"
   },
   "background": {
-    "scripts": ["js/jquery-3.4.1.min.js", "js/background.js"],
+    "scripts": ["js/jquery-3.4.1.min.js", "js/oauth.js"],
     "persistent": false
   },
   "permissions": [
     "identity",
     "storage",
+    "notifications",
     "https://*.coinbase.com/*"
   ],
   "manifest_version": 2

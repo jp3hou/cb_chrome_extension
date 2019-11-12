@@ -15,6 +15,8 @@
     <h1 id="cb_message"></h1>
   </div>
 
+  <div class="loader" style="display: none;">Loading...</div>
+
   <div id="cb_submit_transaction_container" style="display: none;">
     <div id="cb_submission_form_header">
       <h1 id="cb_submission_form_message"></h1>
@@ -25,11 +27,12 @@
     </div>
 
     <form id="cb_submit_transaction_form" method="post">
-      <input name="recipient_name" placeholder="Recipient Name">
-      <input name="recipient_address" placeholder="Email or Hash Address">
-      <input name="amount" placeholder="Amount">
-      <input name="currency" placeholder="Currency">
-      <input name="note" placeholder="Add a note!">
+      <input name="recipient_address" placeholder="Email or Hash Address" required>
+      <input name="amount" placeholder="Amount" required>
+      <select id="currencies_dropdown" name="currencies_dropdown">
+        <option value="" disabled selected>Select an account</option>
+      </select>
+      <input name="note" placeholder="Add a note! (Optional)">
       <button id="cb_submit_transaction_button">Send</button>
       <button id="cb_revoke_token_access_button">Revoke Token Access</button>
     </form>
