@@ -26,7 +26,6 @@ function onSuccessfulOAuthHandshake(response) {
     'coinbase_access_token': response.access_token,
     'coinbase_refresh_token': response.refresh_token
   });
-  coinbase_access_token = response.access_token;
 }
 
 function validateRedirectUri(redirect_uri) {
@@ -46,9 +45,13 @@ function validateRedirectUri(redirect_uri) {
 
 chrome.runtime.onMessage.addListener(
   function(request, sender, sendResponse) {
-    if(request.directive === 'initiate_oauth') {
-      signIn();
-      sendResponse({});
+    switch(request.directive) {
+      case 'initiate_oauth':
+        signIn();
+        break;
+      default:
+        sendResponse({});
+        break;
     }
   }
 );

@@ -26,6 +26,20 @@
     transform: translateY(1px);
 }
 
+#cb_message_container {
+    height: 100%;
+    width: 100%;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+#cb_message {
+    text-align: center;
+}
+
 #cb_submit_transaction_container {
     height: 100%;
     width: 100%;
