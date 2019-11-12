@@ -1,88 +1,90 @@
-const CLIENT_ID = 'd3a57b32056172fc74b8e46436ac08e3082aef663aaaf4f3ab6b396f882dcef7';
-const REDIRECT_URI = 'https://aliafefgjbgnlfcjhdklhieafeheaoaj.chromiumapp.org/redirect_uri';
-const HEADER_MESSAGES = ["Send your compliments to the chef!", "Give a token of your appreciation!"];
-const CLIENT_SECRET = 'b7511f2e5aa9b3566bce12f767727bc52f41a40a0263bbbd53a37016061948e1';
+const HEADER_MESSAGES = ["Show your support!", "Send a token of your appreciation!", "Thank someone for their work!", "Send your compliments to the chef!"];
 
 let coinbase_access_token;
-chrome.storage.local.get(['coinbase_access_token'], function (result) {
-  coinbase_access_token = result.coinbase_access_token;
+
+chrome.storage.local.get('coinbase_access_token', function (result) {
+  if (!chrome.runtime.lastError) {
+    coinbase_access_token = result.coinbase_access_token;
+  }
 });
 
-function signIn() {
-  let url = `https://www.coinbase.com/oauth/authorize?client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}` +
-    '&response_type=code&scope=wallet:user:read,wallet:accounts:read';
-  chrome.identity.launchWebAuthFlow(
-    {
-      'url': url,
-      'interactive': true
-    },
-    function (redirect_url) {
-      alert(redirect_url);
-      if (chrome.runtime.lastError && chrome.runtime.lastError.message === "The user did not approve access.") {
-        showUnsuccessfulSigninView();
-      } else {
-        validateRedirectUri(redirect_url);
-        showSuccessfulSigninView();
-      }
-    });
+function onSuccessfulTokenRevocation() {
+  chrome.storage.local.remove(['coinbase_access_token', 'coinbase_refresh_token']);
+  coinbase_access_token = undefined;
+  $('#cb_submit_transaction_container').hide();
+  $('#cb_message').text('Revoked!');
+  $('#cb_message_container').show().fadeOut(1000, function () {
+    $('#cb_signin_container').show();
+  });
 }
 
-function validateRedirectUri(redirect_uri) {
-  let regex = new RegExp(REDIRECT_URI);
-  let code;
-  if (redirect_uri.match(regex)) {
-    code = redirect_uri.split('code=')[1];
-    $.post('https://api.coinbase.com/oauth/token', {
-      grant_type: 'authorization_code',
-      code: code,
-      client_id: CLIENT_ID,
-      client_secret: CLIENT_SECRET,
-      redirect_uri: REDIRECT_URI
-    }, function(response) {
-      chrome.storage.local.set({ 'coinbase_access_token': response.access_token, 'coinbase_refresh_token': response.refresh_token })
-    });
-  } else {
-    showUnsuccessfulSigninView();
-  }
+function revokeToken(e) {
+  e.preventDefault();
+  $.ajax({
+    url: 'https://api.coinbase.com/oauth/revoke',
+    data: {token: coinbase_access_token},
+    type: 'POST',
+    headers: {'Authorization': `Bearer ${coinbase_access_token}`},
+    success: onSuccessfulTokenRevocation,
+    error: function (error) {
+    }
+  });
+}
+
+function showSigninView() {
+  $('#cb_submit_transaction_container').hide();
+  $('#cb_signin_container').show();
 }
 
 function randomlyGenerateFormMessage() {
   let msg = HEADER_MESSAGES[Math.floor(Math.random() * HEADER_MESSAGES.length)];
-  $('#cb_submission_form_message').text(msg).val();
+  $('#cb_submission_form_message').text(msg);
 }
 
-function sendTransaction() {
-  alert('sending transaction!');
-}
-
-function showSuccessfulSigninView() {
-  $('#cb_signin_container').hide();
-  $('#cb_submit_transaction_button').bind("click", sendTransaction);
-  $('#cb_signin_result_message').text('Successfully signed in!').val();
-  $('#cb_signin_result_container').show().fadeOut(1000, function () {
-    $('#cb_submit_transaction_container').fadeIn(500);
+function sendTransaction(e) {
+  e.preventDefault();
+  $.ajax({
+    url: 'https://api.coinbase.com/v2/accounts/2bbf394c-193b-5b2a-9155-3b4732659ede/transactions',
+    data: {
+      type: 'send',
+      to: '',
+      amount: '',
+      currency: 'BTC',
+      idem: `cb_extension_${Date.now()}`,
+    },
+    type: "POST",
+    headers: {'Authorization': `Bearer ${coinbase_access_token}`},
+    success: function () {
+      $('#cb_submit_transaction_container').hide();
+      $('#cb_message').text('Sent!');
+      $('#cb_message_container').show().fadeOut(1000);
+    },
+    error: function (error) {
+      $('#cb_submit_transaction_form').hide();
+      $('#cb_message').text(`Something went wrong: ${error.message}`);
+    }
   });
 }
 
-function showSignedInView() {
-  $('#cb_submit_transaction_button').bind("click", sendTransaction);
+function showTransactionForm() {
+  $('#cb_signin_container').hide();
   $('#cb_submit_transaction_container').show();
 }
 
-function showUnsuccessfulSigninView() {
-  $('#cb_signin_result_message').text('Sign in failed :(').val();
-  $('#cb_signin_result_container').show().fadeOut(1500, function () {
-    $('#cb_signin_container').show().fadeIn(500);
-  });
+function sendSigninMessage(e) {
+  e.preventDefault();
+  chrome.runtime.sendMessage({directive: "initiate_oauth"});
 }
 
-$(function () {
+window.onload = $(function () {
   randomlyGenerateFormMessage();
+  $('#cb_signin').bind("click", sendSigninMessage);
+  $('#cb_submit_transaction_button').bind("click", sendTransaction);
+  $('#cb_revoke_token_access_button').bind("click", revokeToken);
 
   if (coinbase_access_token !== undefined) {
-    showSignedInView();
+    showTransactionForm();
   } else {
-    $('#cb_signin').bind("click", signIn);
-    $('#cb_signin_container').show();
+    showSigninView();
   }
 });

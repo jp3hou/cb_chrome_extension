@@ -10,16 +10,20 @@
   <div id="cb_signin_container" style="display: none;">
     <button id="cb_signin">Sign in</button>
   </div>
-  <div id="cb_signin_result_container" style="display: none;">
-    <h1 id="cb_signin_result_message"></h1>
-  </div>
 
-  <!--<button id="revoke_cb_token">Log Out</button>-->
+  <div id="cb_message_container" style="display: none;">
+    <h1 id="cb_message"></h1>
+  </div>
 
   <div id="cb_submit_transaction_container" style="display: none;">
     <div id="cb_submission_form_header">
       <h1 id="cb_submission_form_message"></h1>
     </div>
+
+    <div id="cb_accounts_link_container">
+      <a id="cb_accounts_link" href="https://www.coinbase.com/accounts" target="_blank">See your wallet contents here</a>
+    </div>
+
     <form id="cb_submit_transaction_form" method="post">
       <input name="recipient_name" placeholder="Recipient Name">
       <input name="recipient_address" placeholder="Email or Hash Address">
@@ -27,6 +31,7 @@
       <input name="currency" placeholder="Currency">
       <input name="note" placeholder="Add a note!">
       <button id="cb_submit_transaction_button">Send</button>
+      <button id="cb_revoke_token_access_button">Revoke Token Access</button>
     </form>
   </div>
 </div>

@@ -27,12 +27,24 @@
 }
 
 #cb_submit_transaction_container {
+    height: 100%;
+    width: 100%;
     padding: 10px;
     display: flex;
     flex-direction: column;
 }
 
 #cb_submission_form_header {
+    text-align: center;
+}
+
+#cb_accounts_link {
+    font-size: 14px;
+    color: #1652f0;
+    text-decoration: none;
+}
+
+#cb_accounts_link_container {
     margin-bottom: 30px;
     text-align: center;
 }
@@ -52,9 +64,6 @@
     border: 1px solid #ccc;
     outline: none;
     padding-left: 10px;
-}
-
-#cb_submit_transaction_button {
 }
 
 #cb_submit_transaction_form button {
