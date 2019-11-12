@@ -3,31 +3,9 @@ const REDIRECT_URI = 'https://aliafefgjbgnlfcjhdklhieafeheaoaj.chromiumapp.org/r
 const CLIENT_SECRET = 'b7511f2e5aa9b3566bce12f767727bc52f41a40a0263bbbd53a37016061948e1';
 
 function onReceivedRedirectUrl(redirect_url) {
-  if (chrome.runtime.lastError && chrome.runtime.lastError.message === "The user did not approve access.") {
-    showUnsuccessfulSigninView();
-  } else {
+  if (!chrome.runtime.lastError) {
     validateRedirectUri(redirect_url);
-    showSuccessfulSigninView();
   }
-}
-
-function showSuccessfulSigninView() {
-  $('#cb_signin_container').hide();
-  $('.loader').hide();
-
-  $('#cb_message').text('Successfully signed in!');
-  $('#cb_message_container').show().fadeOut(1000, function () {
-    $('#cb_submit_transaction_container').fadeIn(500);
-  });
-}
-
-function showUnsuccessfulSigninView() {
-  $('.loader').hide();
-
-  $('#cb_message').text('Sign in failed :(');
-  $('#cb_message_container').show().fadeOut(1500, function () {
-    $('#cb_signin_container').show().fadeIn(500);
-  });
 }
 
 function signIn() {
@@ -63,8 +41,6 @@ function validateRedirectUri(redirect_uri) {
       client_secret: CLIENT_SECRET,
       redirect_uri: REDIRECT_URI
     }, onSuccessfulOAuthHandshake, 'json');
-  } else {
-    showUnsuccessfulSigninView();
   }
 }
 
