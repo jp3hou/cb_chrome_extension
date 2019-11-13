@@ -18,6 +18,12 @@
 
   <div class="loader" style="display: none;">Loading...</div>
 
+  <div id="cb_2fa_verification_container" style="display: none;">
+    <h1>Please input your 2 factor authentication code</h1>
+    <input id="cb_2fa_code" type="text" placeholder="2FA Code">
+    <button id="cb_submit_2fa_button">Submit Code</button>
+  </div>
+
   <div id="cb_submit_transaction_container" style="display: none;">
     <div id="cb_submission_form_header">
       <h1 id="cb_submission_form_message"></h1>
@@ -28,13 +34,13 @@
     </div>
 
     <form id="cb_submit_transaction_form" method="post">
-      <input name="recipient_address" placeholder="Email or Hash Address" required>
-      <input name="amount" placeholder="Amount" required>
-      <select id="currencies_dropdown" name="currencies_dropdown">
+      <input id="cb_recipient_address" type="text" placeholder="Email or Hash Address">
+      <input id="cb_amount" type="text" placeholder="Amount">
+      <select title="currencies" id="currencies_dropdown">
         <option value="" disabled selected>Select an account</option>
       </select>
-      <input name="note" placeholder="Add a note! (Optional)">
-      <button id="cb_submit_transaction_button">Send</button>
+      <input id="cb_trx_note" type="text" placeholder="Add a note! (Optional)">
+      <button id="cb_submit_transaction_button" type="submit">Send</button>
       <button id="cb_revoke_token_access_button">Revoke Token Access</button>
     </form>
   </div>

@@ -12,6 +12,7 @@ const HEADER_MESSAGES = [
 
 let coinbase_access_token;
 let coinbase_refresh_token;
+let partialTransactionFunction;
 
 chrome.storage.local.get(['coinbase_access_token', 'coinbase_refresh_token'], function (result) {
   if (!chrome.runtime.lastError) {
@@ -30,30 +31,77 @@ function randomlyGenerateFormMessage() {
   $('#cb_submission_form_message').text(msg);
 }
 
+function sendTransactionCurried(account_id, currency, address, amount, description, idem) {
+  return function(two_factor_token) {
+    let headers = {
+      'Authorization': `Bearer ${coinbase_access_token}`,
+    };
+
+    if (two_factor_token) {
+      headers['CB-2FA-TOKEN'] = two_factor_token
+    }
+
+    return $.ajax({
+      url: `https://api.coinbase.com/v2/accounts/${account_id}/transactions`,
+      data: { type: 'send', to: address, amount, description, currency, idem },
+      type: 'POST',
+      headers: headers
+    });
+  }
+}
+
+// "freeze" the account id, currency, address, amount, description, and idem values in a partial function that is
+// called twice, first without and then with a 2 factor authorization token in the headers
+function setPartialTransactionFunction() {
+  let account_id, currency;
+  [account_id, currency] = $('#currencies_dropdown').children('option:selected').val().split('_');
+  let address = $('#cb_recipient_address').val();
+  let amount = $('#cb_amount').val();
+  let description = $('#cb_trx_note').val();
+  let idem = `cb_extension_${Date.now()}`;
+
+  partialTransactionFunction = sendTransactionCurried(account_id, currency, address, amount, description, idem);
+}
+
+function submit2FACode(e) {
+  e.preventDefault();
+  clearView();
+  $('.loader').show();
+
+  partialTransactionFunction($('#cb_2fa_code').val()).done(function (response) {
+    clearView();
+    $('#cb_message').text(`Sent ${response.details.subtitle}! Hash: ${response.network.hash}`);
+    $('#cb_message_container').show().fadeOut(1000, function() {
+      window.close();
+    });
+  }).fail(function (response) {
+    clearView();
+    $('#cb_message').text(`Something went wrong. ${response.status}. Try again?`);
+    $('#cb_message_container').show().fadeOut(1500, function() {
+      $('#cb_submit_transaction_container').show();
+    });
+  });
+}
+
 function sendTransaction(e) {
   e.preventDefault();
   clearView();
   $('.loader').show();
 
-  $.ajax({
-    url: 'https://api.coinbase.com/v2/accounts/2bbf394c-193b-5b2a-9155-3b4732659ede/transactions',
-    data: {
-      type: 'send',
-      to: '',
-      amount: '',
-      currency: 'BTC',
-      idem: `cb_extension_${Date.now()}`,
-    },
-    type: "POST",
-    headers: {'Authorization': `Bearer ${coinbase_access_token}`},
-    success: function () {
-      clearView();
-      $('#cb_message').text('Sent!');
-      $('#cb_message_container').show().fadeOut(1000);
-    },
-    error: function (error) {
-      $('#cb_submit_transaction_form').hide();
-      $('#cb_message').text(`Something went wrong: ${error.message}`);
+  setPartialTransactionFunction();
+
+  // Never expecting this first function to return a successful response due to mandated 2 factor authentication
+  // for the wallet:transactions:send scope
+  partialTransactionFunction('').fail(function(response) {
+    clearView();
+    if (response.status === 402) {
+      $('#cb_submit_2fa_button').bind('click', submit2FACode);
+      $('#cb_2fa_verification_container').show();
+    } else {
+      $('#cb_message').text(`Something went wrong. ${response.status}. Try again?`);
+      $('#cb_message_container').show().fadeOut(1500, function() {
+        $('#cb_submit_transaction_container').show();
+      });
     }
   });
 }
@@ -62,6 +110,7 @@ function clearView() {
   $('#cb_signin_container').hide();
   $('#cb_message_container').hide();
   $('#cb_submit_transaction_container').hide();
+  $('#cb_2fa_verification_container').hide();
   $('.loader').hide();
 
 }
@@ -108,9 +157,10 @@ function refreshToken () {
       coinbase_access_token = response.access_token;
       coinbase_refresh_token = response.refresh_token;
       clearView();
-      $('#cb_message').text('Revoked!');
+      $('#cb_refresh_token_button').hide();
+      $('#cb_message').text('Refreshed!');
       $('#cb_message_container').show().fadeOut(1000, function () {
-        $('#cb_submit_transaction_container').show();
+        getAccounts();
       });
     },
     error: function (error) {
@@ -131,7 +181,7 @@ function getAccounts() {
 
       for (let i = 0; i < currencies.length - 1; i++) {
         let c = currencies[i];
-        $('#currencies_dropdown').append(`<option val="${c.id}-${c.balance.currency}">${c.balance.amount} ${c.balance.currency}</option>`);
+        $('#currencies_dropdown').append(`<option value="${c.id}_${c.balance.currency}">${c.balance.amount} ${c.balance.currency}</option>`);
       }
 
       clearView();
@@ -141,10 +191,8 @@ function getAccounts() {
       clearView();
       if (error.status === 401 && coinbase_refresh_token) {
         $('#cb_message').text(`Token invalid. Refresh Token?`);
-        $('#cb_refresh_token_button').bind('click', refreshToken);
-        $('#cb_refresh_token_button').show();
+        $('#cb_refresh_token_button').bind('click', refreshToken).show();
         $('#cb_message_container').show();
-
       } else {
         clearView();
         $('#cb_signin_container').fadeIn(1000);
