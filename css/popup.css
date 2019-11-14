@@ -6,9 +6,6 @@
     justify-content: center;
 }
 
-#cb_signin_container {
-}
-
 #cb_extension_container button {
     width: 200px;
     height: 50px;
@@ -37,7 +34,7 @@
     padding-left: 10px;
 }
 
-#cb_message_container {
+.cb_container {
     height: 100%;
     width: 100%;
     padding: 10px;
@@ -52,13 +49,6 @@
 }
 
 #cb_2fa_verification_container {
-    height: 100%;
-    width: 100%;
-    padding: 10px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
     text-align: center;
 }
 

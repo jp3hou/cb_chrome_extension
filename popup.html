@@ -7,18 +7,19 @@
 </head>
 <body>
 <div id="cb_extension_container">
-  <div id="cb_signin_container" style="display: none;">
+  <div class="cb_container" id="cb_signin_container" style="display: none;">
     <button id="cb_signin">Sign in</button>
+    <h3>This will redirect you to Coinbase to sign in</h3>
   </div>
 
-  <div id="cb_message_container" style="display: none;">
+  <div class="cb_container" id="cb_message_container" style="display: none;">
     <h1 id="cb_message"></h1>
     <button id="cb_refresh_token_button" style="display: none;">Refresh Token</button>
   </div>
 
   <div class="loader" style="display: none;">Loading...</div>
 
-  <div id="cb_2fa_verification_container" style="display: none;">
+  <div class="cb_container" id="cb_2fa_verification_container" style="display: none;">
     <h1>Please input your 2 factor authentication code</h1>
     <input id="cb_2fa_code" type="text" placeholder="2FA Code">
     <button id="cb_submit_2fa_button">Submit Code</button>

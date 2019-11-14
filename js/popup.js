@@ -115,7 +115,7 @@ function clearView() {
 
 }
 function onSuccessfulTokenRevocation() {
-  chrome.storage.local.remove(['coinbase_access_token', 'coinbase_refresh_token']);
+  clearTokens();
   clearView();
   $('#cb_message').text('Revoked!');
   $('#cb_message_container').show().fadeOut(1000, function () {
@@ -123,7 +123,8 @@ function onSuccessfulTokenRevocation() {
   });
 }
 
-function revokeToken() {
+function revokeToken(e) {
+  e.preventDefault();
   clearView();
   $('.loader').show();
   $.ajax({
@@ -132,12 +133,17 @@ function revokeToken() {
     type: 'POST',
     headers: {'Authorization': `Bearer ${coinbase_access_token}`},
     success: onSuccessfulTokenRevocation,
-    error: function (error) {
-    }
   });
 }
 
-function refreshToken () {
+function clearTokens() {
+  chrome.storage.local.remove(['coinbase_access_token', 'coinbase_refresh_token']);
+  coinbase_access_token = undefined;
+  coinbase_refresh_token = undefined;
+}
+
+function refreshToken (e) {
+  e.preventDefault();
   clearView();
   $('.loader').show();
   $.ajax({
@@ -163,10 +169,13 @@ function refreshToken () {
         getAccounts();
       });
     },
-    error: function (error) {
+    error: function () {
       clearView();
-      $('#cb_message').text(`Error refreshing token. Status ${error.status}`);
-      $('#cb_message_container').show();
+      $('#cb_message').text(`Error refreshing token. Try signing in again.`);
+      clearTokens();
+      $('#cb_message_container').show().fadeOut(1500, function() {
+        $('#cb_signin_container').show();
+      });
     }
   });
 }
