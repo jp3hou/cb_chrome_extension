@@ -33,6 +33,12 @@
     outline: none;
     padding-left: 10px;
 }
+#cb_converted_amount {
+    margin-top: -20px;
+    margin-bottom: 10px;
+    color: #777;
+    height: 10px;
+}
 
 .cb_container {
     height: 100%;

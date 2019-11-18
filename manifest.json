@@ -14,7 +14,7 @@
     "identity",
     "storage",
     "notifications",
-    "https://*.coinbase.com/*"
+    "https://api.coinbase.com/*"
   ],
   "manifest_version": 2
 }
