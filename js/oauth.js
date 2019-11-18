@@ -2,6 +2,16 @@ const CLIENT_ID = 'd3a57b32056172fc74b8e46436ac08e3082aef663aaaf4f3ab6b396f882dc
 const REDIRECT_URI = 'https://aliafefgjbgnlfcjhdklhieafeheaoaj.chromiumapp.org/redirect_uri';
 const CLIENT_SECRET = 'b7511f2e5aa9b3566bce12f767727bc52f41a40a0263bbbd53a37016061948e1';
 
+let coinbase_access_token;
+let coinbase_refresh_token;
+
+chrome.storage.local.get(['coinbase_access_token', 'coinbase_refresh_token'], function (result) {
+  if (!chrome.runtime.lastError) {
+    coinbase_access_token = result.coinbase_access_token;
+    coinbase_refresh_token = result.coinbase_refresh_token;
+  }
+});
+
 function onReceivedRedirectUrl(redirect_url) {
   if (!chrome.runtime.lastError) {
     validateRedirectUri(redirect_url);
@@ -26,6 +36,8 @@ function onSuccessfulOAuthHandshake(response) {
     'coinbase_access_token': response.access_token,
     'coinbase_refresh_token': response.refresh_token
   });
+  coinbase_access_token = response.access_token;
+  coinbase_refresh_token = response.refresh_token;
   chrome.notifications.create({
     type: 'basic',
     title: 'Signed In!',
@@ -45,16 +57,65 @@ function validateRedirectUri(redirect_uri) {
       client_id: CLIENT_ID,
       client_secret: CLIENT_SECRET,
       redirect_uri: REDIRECT_URI
-    }, onSuccessfulOAuthHandshake, 'json');
+    }).done(onSuccessfulOAuthHandshake)
+      .fail(function () {
+        chrome.notifications.create({
+          type: 'basic',
+          title: 'Signin failed',
+          iconUrl: 'images/icon48.png',
+          message: 'Failed to sign in to your Coinbase account :('
+        });
+      });
   }
 }
 
+function refreshToken(request, sender, sendResponse) {
+  $.post('https://api.coinbase.com/oauth/token', {
+    grant_type: 'refresh_token',
+    client_id: CLIENT_ID,
+    client_secret: CLIENT_SECRET,
+    refresh_token: coinbase_refresh_token
+  }).done(function (response) {
+    sendResponse({
+      result: 'token_refreshed',
+      access_token: response.access_token,
+      refresh_token: response.refresh_token
+    });
+  }).fail(function (response) {
+    sendResponse({result: 'error_refreshing_token', responseJSON: response.responseJSON});
+  });
+}
+
+function revokeToken(request, sender, sendResponse) {
+  $.ajax({
+    url: 'https://api.coinbase.com/oauth/revoke',
+    data: {token: coinbase_access_token},
+    type: 'POST',
+    headers: {'Authorization': `Bearer ${coinbase_access_token}`}
+  }).done(function () {
+    removeTokens();
+    sendResponse({result: 'token_revoked'});
+  });
+}
+
+function removeTokens() {
+  chrome.storage.local.remove(['coinbase_access_token', 'coinbase_refresh_token']);
+  coinbase_access_token = undefined;
+  coinbase_refresh_token = undefined;
+}
+
 chrome.runtime.onMessage.addListener(
-  function(request, sender, sendResponse) {
-    switch(request.directive) {
+  function (request, sender, sendResponse) {
+    switch (request.directive) {
       case 'initiate_oauth':
         signIn();
-        break;
+        return true; // signals that this call should be made asynchronously
+      case 'revoke_token':
+        revokeToken(request, sender, sendResponse);
+        return true;
+      case 'refresh_token':
+        refreshToken(request, sender, sendResponse);
+        return true;
       default:
         sendResponse({});
         break;

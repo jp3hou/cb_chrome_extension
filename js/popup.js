@@ -1,6 +1,3 @@
-const CLIENT_ID = 'd3a57b32056172fc74b8e46436ac08e3082aef663aaaf4f3ab6b396f882dcef7';
-const CLIENT_SECRET = 'b7511f2e5aa9b3566bce12f767727bc52f41a40a0263bbbd53a37016061948e1';
-
 const HEADER_MESSAGES = [
   "Send a penny for their thoughts!",
   "Show your support!",
@@ -9,6 +6,7 @@ const HEADER_MESSAGES = [
   "Send your compliments to the chef!",
   "Give someone your 2 cents!"
 ];
+const CB_VERSION = '2018-10-09';
 
 let coinbase_access_token;
 let coinbase_refresh_token;
@@ -35,7 +33,7 @@ function sendTransactionCurried(account_id, currency, address, amount, descripti
   return function (two_factor_token) {
     let headers = {
       'Authorization': `Bearer ${coinbase_access_token}`,
-      'CB-VERSION': '2018-10-09',
+      'CB-VERSION': CB_VERSION,
     };
 
     if (two_factor_token) {
@@ -126,61 +124,10 @@ function onSuccessfulTokenRevocation() {
   });
 }
 
-function revokeToken(e) {
-  e.preventDefault();
-  clearView();
-  $('.loader').show();
-  $.ajax({
-    url: 'https://api.coinbase.com/oauth/revoke',
-    data: {token: coinbase_access_token},
-    type: 'POST',
-    headers: {'Authorization': `Bearer ${coinbase_access_token}`}
-  }).done(onSuccessfulTokenRevocation)
-    .fail(onSuccessfulTokenRevocation);
-}
-
 function clearTokens() {
   chrome.storage.local.remove(['coinbase_access_token', 'coinbase_refresh_token']);
   coinbase_access_token = undefined;
   coinbase_refresh_token = undefined;
-}
-
-function refreshToken(e) {
-  e.preventDefault();
-  clearView();
-  $('.loader').show();
-  $.ajax({
-    url: 'https://api.coinbase.com/oauth/token',
-    data: {
-      grant_type: 'refresh_token',
-      client_id: CLIENT_ID,
-      client_secret: CLIENT_SECRET,
-      refresh_token: coinbase_refresh_token,
-    },
-    type: 'POST',
-    success: function (response) {
-      chrome.storage.local.set({
-        'coinbase_access_token': response.access_token,
-        'coinbase_refresh_token': response.refresh_token
-      });
-      coinbase_access_token = response.access_token;
-      coinbase_refresh_token = response.refresh_token;
-      clearView();
-      $('#cb_refresh_token_button').hide();
-      $('#cb_message').text('Refreshed!');
-      $('#cb_message_container').show().fadeOut(1000, function () {
-        getAccounts();
-      });
-    },
-    error: function () {
-      clearView();
-      $('#cb_message').text(`Error refreshing token. Try signing in again.`);
-      clearTokens();
-      $('#cb_message_container').show().fadeOut(1500, function () {
-        $('#cb_signin_container').show();
-      });
-    }
-  });
 }
 
 function getAccounts() {
@@ -189,16 +136,17 @@ function getAccounts() {
     type: 'GET',
     headers: {
       'Authorization': `Bearer ${coinbase_access_token}`,
-      'CB-VERSION': '2018-10-09',
+      'CB-VERSION': CB_VERSION,
     },
     success: function (response) {
       let currencies = response.data;
 
       for (let i = 0; i < currencies.length - 1; i++) {
         let c = currencies[i];
-        $('#currencies_dropdown').append(`<option value="${c.id}_${c.balance.currency}">${c.balance.amount} ${c.balance.currency}</option>`);
+        if (parseFloat(c.balance) > 0) {
+          $('#currencies_dropdown').append(`<option value="${c.id}_${c.balance.currency}">${c.balance.amount} ${c.balance.currency}</option>`);
+        }
       }
-
       clearView();
       showTransactionForm();
     },
@@ -206,7 +154,7 @@ function getAccounts() {
       clearView();
       if (error.status === 401 && coinbase_refresh_token) {
         $('#cb_message').text(`Token invalid. Refresh Token?`);
-        $('#cb_refresh_token_button').bind('click', refreshToken).show();
+        $('#cb_refresh_token_button').bind('click', sendRefreshTokenMessage).show();
         $('#cb_message_container').show();
       } else {
         clearView();
@@ -223,6 +171,47 @@ function showTransactionForm() {
 function sendSigninMessage(e) {
   e.preventDefault();
   chrome.runtime.sendMessage({directive: 'initiate_oauth'});
+}
+
+function sendRefreshTokenMessage(e) {
+  e.preventDefault();
+  clearView();
+  $('.loader').show();
+
+  chrome.runtime.sendMessage({directive: 'refresh_token'}, function(response) {
+    if (response.result === 'token_refreshed') {
+      chrome.storage.local.set({
+        'coinbase_access_token': response.access_token,
+        'coinbase_refresh_token': response.refresh_token
+      });
+      coinbase_access_token = response.access_token;
+      coinbase_refresh_token = response.refresh_token;
+      clearView();
+      $('#cb_refresh_token_button').hide();
+      $('#cb_message').text('Refreshed!');
+      $('#cb_message_container').show().fadeOut(1000, function () {
+        getAccounts();
+      });
+    } else if(response.result === 'error_refreshing_token') {
+      clearView();
+      $('#cb_message').text(`Error refreshing token. Try signing in again.`);
+      clearTokens();
+      $('#cb_message_container').show().fadeOut(1500, function () {
+        $('#cb_signin_container').show();
+      });
+    }
+  });
+}
+
+function sendRevokeTokenMessage(e) {
+  e.preventDefault();
+  clearView();
+  $('.loader').show();
+  chrome.runtime.sendMessage({directive: 'revoke_token'}, function(response) {
+    if (response.result === 'token_revoked') {
+      onSuccessfulTokenRevocation();
+    }
+  });
 }
 
 function calculateExchangeRates() {
@@ -247,7 +236,7 @@ function calculateExchangeRates() {
 window.onload = $(function () {
   randomlyGenerateFormMessage();
   $('#cb_signin').bind('click', sendSigninMessage);
-  $('#cb_revoke_token_access_button').bind('click', revokeToken);
+  $('#cb_revoke_token_access_button').bind('click', sendRevokeTokenMessage);
   $('#cb_submit_transaction_button').bind('click', sendTransaction);
   $('#cb_amount').keyup(calculateExchangeRates);
   $('#currencies_dropdown').change(calculateExchangeRates);
