@@ -180,10 +180,6 @@ function sendRefreshTokenMessage(e) {
 
   chrome.runtime.sendMessage({directive: 'refresh_token'}, function(response) {
     if (response.result === 'token_refreshed') {
-      chrome.storage.local.set({
-        'coinbase_access_token': response.access_token,
-        'coinbase_refresh_token': response.refresh_token
-      });
       coinbase_access_token = response.access_token;
       coinbase_refresh_token = response.refresh_token;
       clearView();

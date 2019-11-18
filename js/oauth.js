@@ -76,6 +76,12 @@ function refreshToken(request, sender, sendResponse) {
     client_secret: CLIENT_SECRET,
     refresh_token: coinbase_refresh_token
   }).done(function (response) {
+    chrome.storage.local.set({
+      'coinbase_access_token': response.access_token,
+      'coinbase_refresh_token': response.refresh_token
+    });
+    coinbase_access_token = response.access_token;
+    coinbase_refresh_token = response.refresh_token;
     sendResponse({
       result: 'token_refreshed',
       access_token: response.access_token,
