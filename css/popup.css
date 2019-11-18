@@ -52,6 +52,8 @@
 
 #cb_message {
     text-align: center;
+    word-wrap: break-word;
+    width: 100%;
 }
 
 #cb_2fa_verification_container {
