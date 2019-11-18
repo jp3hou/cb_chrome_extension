@@ -109,10 +109,10 @@ chrome.runtime.onMessage.addListener(
     switch (request.directive) {
       case 'initiate_oauth':
         signIn();
-        return true; // signals that this call should be made asynchronously
+        break;
       case 'revoke_token':
         revokeToken(request, sender, sendResponse);
-        return true;
+        return true; // signals that this call should be made asynchronously
       case 'refresh_token':
         refreshToken(request, sender, sendResponse);
         return true;
