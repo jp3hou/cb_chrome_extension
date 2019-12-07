@@ -18,6 +18,11 @@
     cursor: pointer;
 }
 
+#cb_logo {
+    width: 320px;
+    margin-bottom: 35px;
+}
+
 #cb_extension_container button:active {
     box-shadow: 0 1px darkgray;
     transform: translateY(1px);
