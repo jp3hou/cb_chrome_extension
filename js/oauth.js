@@ -46,36 +46,40 @@ const onSuccessfulOAuthHandshake = (response) => {
   });
 }
 
-const validateRedirectUri = (redirect_uri) => {
+const validateRedirectUri = async (redirect_uri) => {
   let regex = new RegExp(REDIRECT_URI);
   let code;
   if (redirect_uri.match(regex)) {
     code = redirect_uri.split('code=')[1];
-    $.post('https://api.coinbase.com/oauth/token', {
-      grant_type: 'authorization_code',
-      code,
-      client_id: CLIENT_ID,
-      client_secret: CLIENT_SECRET,
-      redirect_uri: REDIRECT_URI
-    }).done(onSuccessfulOAuthHandshake)
-      .fail(() => {
-        chrome.notifications.create({
-          type: 'basic',
-          title: 'Signin failed',
-          iconUrl: 'images/icon48.png',
-          message: 'Failed to sign in to your Coinbase account :('
-        });
+    try {
+      let results = await $.post('https://api.coinbase.com/oauth/token', {
+        grant_type: 'authorization_code',
+        code,
+        client_id: CLIENT_ID,
+        client_secret: CLIENT_SECRET,
+        redirect_uri: REDIRECT_URI
       });
+      onSuccessfulOAuthHandshake(results);
+    } catch (e) {
+      chrome.notifications.create({
+        type: 'basic',
+        title: 'Signin failed',
+        iconUrl: 'images/icon48.png',
+        message: 'Failed to sign in to your Coinbase account :('
+      });
+    }
   }
 }
 
-const refreshToken = (request, sender, sendResponse) => {
-  $.post('https://api.coinbase.com/oauth/token', {
-    grant_type: 'refresh_token',
-    client_id: CLIENT_ID,
-    client_secret: CLIENT_SECRET,
-    refresh_token: coinbase_refresh_token
-  }).done((response) => {
+const refreshToken = async (request, sender, sendResponse) => {
+  try {
+    let response = await $.post('https://api.coinbase.com/oauth/token', {
+      grant_type: 'refresh_token',
+      client_id: CLIENT_ID,
+      client_secret: CLIENT_SECRET,
+      refresh_token: coinbase_refresh_token
+    });
+
     chrome.storage.local.set({
       'coinbase_access_token': response.access_token,
       'coinbase_refresh_token': response.refresh_token
@@ -87,21 +91,20 @@ const refreshToken = (request, sender, sendResponse) => {
       access_token: response.access_token,
       refresh_token: response.refresh_token
     });
-  }).fail((response) => {
-    sendResponse({result: 'error_refreshing_token', responseJSON: response.responseJSON});
-  });
+  } catch (e) {
+    sendResponse({ result: 'error_refreshing_token', responseJSON: e.responseJSON });
+  }
 }
 
-const revokeToken = (request, sender, sendResponse) => {
-  $.ajax({
+const revokeToken = async (request, sender, sendResponse) => {
+  await $.ajax({
     url: 'https://api.coinbase.com/oauth/revoke',
     data: {token: coinbase_access_token},
     type: 'POST',
-    headers: {'Authorization': `Bearer ${coinbase_access_token}`}
-  }).done(() => {
-    removeTokens();
-    sendResponse({result: 'token_revoked'});
+    headers: { 'Authorization': `Bearer ${coinbase_access_token}` }
   });
+  removeTokens();
+  sendResponse({ result: 'token_revoked' });
 }
 
 const removeTokens = () => {

@@ -42,7 +42,7 @@ const sendTransactionCurried = (account_id, currency, address, amount, descripti
 
     return $.ajax({
       url: `https://api.coinbase.com/v2/accounts/${account_id}/transactions`,
-      data: {type: 'send', to: address, amount, description, currency, idem},
+      data: { type: 'send', to: address, amount, description, currency, idem },
       type: 'POST',
       headers: headers
     });
@@ -70,30 +70,29 @@ const isValidInput = () => {
   return account_id && currency && address && amount;
 }
 
-const submit2FACode = (e) => {
+const submit2FACode = async (e) => {
   e.preventDefault();
   clearView();
   $('.loader').show();
 
-  partialTransactionFunction($('#cb_2fa_code').val())
-    .done((response) => {
-      clearView();
-      let url = response.data.resource_path.split('/v2')[1];
-      let message = $.parseHTML(`Sent ${Math.abs(parseFloat(response.data.amount.amount))} ${response.data.amount.currency}! See more details <a target="_blank" href=https://coinbase.com${url}>here</a>`);
-      $('#cb_message').text('').append(message);
-      $('#cb_message_container').show();
-    })
-    .fail((response) => {
-      clearView();
-      let html = $.parseHTML(`Error: ${response.responseJSON.errors[0].message}`);
-      $('#cb_message').text('').append(html);
-      $('#cb_message_container').show().fadeOut(1500, () => {
-        $('#cb_submit_transaction_container').show();
-      });
+  try {
+    let response = await partialTransactionFunction($('#cb_2fa_code').val());
+    clearView();
+    let url = response.data.resource_path.split('/v2')[1];
+    let message = $.parseHTML(`Sent ${Math.abs(parseFloat(response.data.amount.amount))} ${response.data.amount.currency}! See more details <a target="_blank" href=https://coinbase.com${url}>here</a>`);
+    $('#cb_message').text('').append(message);
+    $('#cb_message_container').show();
+  } catch (err) {
+    clearView();
+    let html = $.parseHTML(`Error: ${err.responseJSON.errors[0].message}`);
+    $('#cb_message').text('').append(html);
+    $('#cb_message_container').show().fadeOut(1500, () => {
+      $('#cb_submit_transaction_container').show();
     });
+  }
 }
 
-const sendTransaction = (e) => {
+const sendTransaction = async (e) => {
   e.preventDefault();
   if (isValidInput()) {
     clearView();
@@ -103,7 +102,9 @@ const sendTransaction = (e) => {
 
     // Never expecting this first function to return a successful response due to mandated 2 factor authentication
     // for the wallet:transactions:send scope
-    partialTransactionFunction('').fail((response) => {
+    try {
+      await partialTransactionFunction('');
+    } catch (response) {
       clearView();
       if (response.status === 402) {
         $('#cb_submit_2fa_button').bind('click', submit2FACode);
@@ -113,7 +114,7 @@ const sendTransaction = (e) => {
         $('#cb_message').append(html);
         $('#cb_message_container').show()
       }
-    });
+    }
   } else {
     $('#cb_submit_error_message').text('Please fill in all required fields').show().fadeOut(3000);
   }
@@ -143,36 +144,36 @@ const clearTokens = () => {
   coinbase_refresh_token = undefined;
 }
 
-const getAccounts = () => {
-  $.ajax({
-    url: 'https://api.coinbase.com/v2/accounts',
-    type: 'GET',
-    headers: {
-      'Authorization': `Bearer ${coinbase_access_token}`,
-      'CB-VERSION': CB_VERSION,
-    },
-    success: (response) => {
-      let currencies = response.data;
+const getAccounts = async () => {
+  try {
+    let response = await $.ajax({
+      url: 'https://api.coinbase.com/v2/accounts',
+      type: 'GET',
+      headers: {
+        'Authorization': `Bearer ${coinbase_access_token}`,
+        'CB-VERSION': CB_VERSION,
+      }
+    });
 
-      for (let i = 0; i < currencies.length - 1; i++) {
-        let c = currencies[i];
-        $('#currencies_dropdown').append(`<option value="${c.id}_${c.balance.currency}">${c.balance.amount} ${c.balance.currency}</option>`);
-      }
-      clearView();
-      showTransactionForm();
-    },
-    error: (error) => {
-      clearView();
-      if (error.status === 401 && coinbase_refresh_token) {
-        $('#cb_message').text(`Token invalid. Refresh Token?`);
-        $('#cb_refresh_token_button').bind('click', sendRefreshTokenMessage).show();
-        $('#cb_message_container').show();
-      } else {
-        clearView();
-        $('#cb_signin_container').fadeIn(1000);
-      }
+    let currencies = response.data;
+
+    for (let i = 0; i < currencies.length - 1; i++) {
+      let c = currencies[i];
+      $('#currencies_dropdown').append(`<option value="${c.id}_${c.balance.currency}">${c.balance.amount} ${c.balance.currency}</option>`);
     }
-  });
+    clearView();
+    showTransactionForm();
+  } catch (err) {
+    clearView();
+    if (err.status === 401 && coinbase_refresh_token) {
+      $('#cb_message').text(`Token invalid. Refresh Token?`);
+      $('#cb_refresh_token_button').bind('click', sendRefreshTokenMessage).show();
+      $('#cb_message_container').show();
+    } else {
+      clearView();
+      $('#cb_signin_container').fadeIn(1000);
+    }
+  }
 }
 
 const showTransactionForm = () => {
@@ -221,7 +222,7 @@ const sendRevokeTokenMessage = (e) => {
   });
 }
 
-const calculateExchangeRates = () =>{
+const calculateExchangeRates = async () =>{
   let exchangeRates;
   let amount = parseFloat($('#cb_amount').val());
   let selectedCurrency = $('#currencies_dropdown').children('option:selected').val().split('_')[1];
@@ -229,15 +230,15 @@ const calculateExchangeRates = () =>{
     return $('#cb_converted_amount').text('');
   }
 
-  $.ajax({
+  let response = await $.ajax({
     url: `https://coinbase.com/api/v2/exchange-rates?currency=${selectedCurrency}`,
     data: {token: coinbase_access_token},
     type: 'GET',
-  }).done((response) => {
-    exchangeRates = response.data.rates;
-    let convertedAmount = (parseFloat(amount) * parseFloat(exchangeRates['USD'])).toFixed(2);
-    $('#cb_converted_amount').text(`${amount} ${selectedCurrency} is about ${convertedAmount} USD`);
   });
+
+  exchangeRates = response.data.rates;
+  let convertedAmount = (parseFloat(amount) * parseFloat(exchangeRates['USD'])).toFixed(2);
+  $('#cb_converted_amount').text(`${amount} ${selectedCurrency} is about ${convertedAmount} USD`);
 }
 
 window.onload = $(() => {
