@@ -62,6 +62,14 @@ function setPartialTransactionFunction() {
   partialTransactionFunction = sendTransactionCurried(account_id, currency, address, amount, description, idem);
 }
 
+function isValidInput() {
+  [account_id, currency] = $('#currencies_dropdown').children('option:selected').val().split('_');
+  let address = $('#cb_recipient_address').val();
+  let amount = $('#cb_amount').val();
+
+  return account_id && currency && address && amount;
+}
+
 function submit2FACode(e) {
   e.preventDefault();
   clearView();
@@ -87,24 +95,28 @@ function submit2FACode(e) {
 
 function sendTransaction(e) {
   e.preventDefault();
-  clearView();
-  $('.loader').show();
-
-  setPartialTransactionFunction();
-
-  // Never expecting this first function to return a successful response due to mandated 2 factor authentication
-  // for the wallet:transactions:send scope
-  partialTransactionFunction('').fail(function (response) {
+  if (isValidInput()) {
     clearView();
-    if (response.status === 402) {
-      $('#cb_submit_2fa_button').bind('click', submit2FACode);
-      $('#cb_2fa_verification_container').show();
-    } else {
-      let html = $.parseHTML(`Error: ${response.responseJSON.errors[0].message}`);
-      $('#cb_message').append(html);
-      $('#cb_message_container').show()
-    }
-  });
+    $('.loader').show();
+
+    setPartialTransactionFunction();
+
+    // Never expecting this first function to return a successful response due to mandated 2 factor authentication
+    // for the wallet:transactions:send scope
+    partialTransactionFunction('').fail(function (response) {
+      clearView();
+      if (response.status === 402) {
+        $('#cb_submit_2fa_button').bind('click', submit2FACode);
+        $('#cb_2fa_verification_container').show();
+      } else {
+        let html = $.parseHTML(`Error: ${response.responseJSON.errors[0].message}`);
+        $('#cb_message').append(html);
+        $('#cb_message_container').show()
+      }
+    });
+  } else {
+    $('#cb_submit_error_message').text('Please fill in all required fields').show().fadeOut(3000);
+  }
 }
 
 function clearView() {
@@ -144,7 +156,7 @@ function getAccounts() {
 
       for (let i = 0; i < currencies.length - 1; i++) {
         let c = currencies[i];
-        $('#currencies_dropdown').append(`<option value="${c.id}_${c.balance.currency}">${c.balance.currency}</option>`);
+        $('#currencies_dropdown').append(`<option value="${c.id}_${c.balance.currency}">${c.balance.amount} ${c.balance.currency}</option>`);
       }
       clearView();
       showTransactionForm();
@@ -218,7 +230,7 @@ function calculateExchangeRates() {
   }
 
   $.ajax({
-    url: `https://coinbase-staging.cbhq.net/api/v2/exchange-rates?currency=${selectedCurrency}`,
+    url: `https://coinbase.com/api/v2/exchange-rates?currency=${selectedCurrency}`,
     data: {token: coinbase_access_token},
     type: 'GET',
   }).done(function (response) {

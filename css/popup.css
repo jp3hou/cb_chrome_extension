@@ -95,6 +95,14 @@
     align-items: center;
 }
 
+#cb_submit_error_container {
+  height: 10px;
+}
+
+#cb_submit_error_message {
+  color: orange;
+}
+
 #cb_submit_transaction_form select {
     width: 90%;
     height: 35px;
