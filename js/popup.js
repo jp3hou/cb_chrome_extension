@@ -12,25 +12,25 @@ let coinbase_access_token;
 let coinbase_refresh_token;
 let partialTransactionFunction;
 
-chrome.storage.local.get(['coinbase_access_token', 'coinbase_refresh_token'], function (result) {
+chrome.storage.local.get(['coinbase_access_token', 'coinbase_refresh_token'], (result) => {
   if (!chrome.runtime.lastError) {
     coinbase_access_token = result.coinbase_access_token;
     coinbase_refresh_token = result.coinbase_refresh_token;
   }
 });
 
-function showSigninView() {
+const showSigninView = () => {
   $('#cb_submit_transaction_container').hide();
   $('#cb_signin_container').show();
 }
 
-function randomlyGenerateFormMessage() {
+const randomlyGenerateFormMessage = () => {
   let msg = HEADER_MESSAGES[Math.floor(Math.random() * HEADER_MESSAGES.length)];
   $('#cb_submission_form_message').text(msg);
 }
 
-function sendTransactionCurried(account_id, currency, address, amount, description, idem) {
-  return function (two_factor_token) {
+const sendTransactionCurried = (account_id, currency, address, amount, description, idem) => {
+  return (two_factor_token) => {
     let headers = {
       'Authorization': `Bearer ${coinbase_access_token}`,
       'CB-VERSION': CB_VERSION,
@@ -51,7 +51,7 @@ function sendTransactionCurried(account_id, currency, address, amount, descripti
 
 // "freeze" the account id, currency, address, amount, description, and idem values in a partial function that is
 // called twice, first without and then with a 2 factor authorization token in the headers
-function setPartialTransactionFunction() {
+const setPartialTransactionFunction = () => {
   let account_id, currency;
   [account_id, currency] = $('#currencies_dropdown').children('option:selected').val().split('_');
   let address = $('#cb_recipient_address').val();
@@ -62,7 +62,7 @@ function setPartialTransactionFunction() {
   partialTransactionFunction = sendTransactionCurried(account_id, currency, address, amount, description, idem);
 }
 
-function isValidInput() {
+const isValidInput = () => {
   [account_id, currency] = $('#currencies_dropdown').children('option:selected').val().split('_');
   let address = $('#cb_recipient_address').val();
   let amount = $('#cb_amount').val();
@@ -70,30 +70,30 @@ function isValidInput() {
   return account_id && currency && address && amount;
 }
 
-function submit2FACode(e) {
+const submit2FACode = (e) => {
   e.preventDefault();
   clearView();
   $('.loader').show();
 
   partialTransactionFunction($('#cb_2fa_code').val())
-    .done(function (response) {
+    .done((response) => {
       clearView();
       let url = response.data.resource_path.split('/v2')[1];
       let message = $.parseHTML(`Sent ${Math.abs(parseFloat(response.data.amount.amount))} ${response.data.amount.currency}! See more details <a target="_blank" href=https://coinbase.com${url}>here</a>`);
       $('#cb_message').text('').append(message);
       $('#cb_message_container').show();
     })
-    .fail(function (response) {
+    .fail((response) => {
       clearView();
       let html = $.parseHTML(`Error: ${response.responseJSON.errors[0].message}`);
       $('#cb_message').text('').append(html);
-      $('#cb_message_container').show().fadeOut(1500, function () {
+      $('#cb_message_container').show().fadeOut(1500, () => {
         $('#cb_submit_transaction_container').show();
       });
     });
 }
 
-function sendTransaction(e) {
+const sendTransaction = (e) => {
   e.preventDefault();
   if (isValidInput()) {
     clearView();
@@ -103,7 +103,7 @@ function sendTransaction(e) {
 
     // Never expecting this first function to return a successful response due to mandated 2 factor authentication
     // for the wallet:transactions:send scope
-    partialTransactionFunction('').fail(function (response) {
+    partialTransactionFunction('').fail((response) => {
       clearView();
       if (response.status === 402) {
         $('#cb_submit_2fa_button').bind('click', submit2FACode);
@@ -119,7 +119,7 @@ function sendTransaction(e) {
   }
 }
 
-function clearView() {
+const clearView = () => {
   $('#cb_signin_container').hide();
   $('#cb_message_container').hide();
   $('#cb_submit_transaction_container').hide();
@@ -128,22 +128,22 @@ function clearView() {
 
 }
 
-function onSuccessfulTokenRevocation() {
+const onSuccessfulTokenRevocation = () => {
   clearTokens();
   clearView();
   $('#cb_message').text('Revoked!');
-  $('#cb_message_container').show().fadeOut(1000, function () {
+  $('#cb_message_container').show().fadeOut(1000, () => {
     $('#cb_signin_container').show();
   });
 }
 
-function clearTokens() {
+const clearTokens = () => {
   chrome.storage.local.remove(['coinbase_access_token', 'coinbase_refresh_token']);
   coinbase_access_token = undefined;
   coinbase_refresh_token = undefined;
 }
 
-function getAccounts() {
+const getAccounts = () => {
   $.ajax({
     url: 'https://api.coinbase.com/v2/accounts',
     type: 'GET',
@@ -151,7 +151,7 @@ function getAccounts() {
       'Authorization': `Bearer ${coinbase_access_token}`,
       'CB-VERSION': CB_VERSION,
     },
-    success: function (response) {
+    success: (response) => {
       let currencies = response.data;
 
       for (let i = 0; i < currencies.length - 1; i++) {
@@ -161,7 +161,7 @@ function getAccounts() {
       clearView();
       showTransactionForm();
     },
-    error: function (error) {
+    error: (error) => {
       clearView();
       if (error.status === 401 && coinbase_refresh_token) {
         $('#cb_message').text(`Token invalid. Refresh Token?`);
@@ -175,53 +175,53 @@ function getAccounts() {
   });
 }
 
-function showTransactionForm() {
+const showTransactionForm = () => {
   $('#cb_submit_transaction_container').show();
 }
 
-function sendSigninMessage(e) {
+const sendSigninMessage = (e) => {
   e.preventDefault();
   chrome.runtime.sendMessage({directive: 'initiate_oauth'});
 }
 
-function sendRefreshTokenMessage(e) {
+const sendRefreshTokenMessage = (e) => {
   e.preventDefault();
   clearView();
   $('.loader').show();
 
-  chrome.runtime.sendMessage({directive: 'refresh_token'}, function (response) {
+  chrome.runtime.sendMessage({directive: 'refresh_token'}, (response) => {
     if (response.result === 'token_refreshed') {
       coinbase_access_token = response.access_token;
       coinbase_refresh_token = response.refresh_token;
       clearView();
       $('#cb_refresh_token_button').hide();
       $('#cb_message').text('Refreshed!');
-      $('#cb_message_container').show().fadeOut(1000, function () {
+      $('#cb_message_container').show().fadeOut(1000, () => {
         getAccounts();
       });
     } else if (response.result === 'error_refreshing_token') {
       clearView();
       $('#cb_message').text(`Error refreshing token. Try signing in again.`);
       clearTokens();
-      $('#cb_message_container').show().fadeOut(1500, function () {
+      $('#cb_message_container').show().fadeOut(1500, () => {
         $('#cb_signin_container').show();
       });
     }
   });
 }
 
-function sendRevokeTokenMessage(e) {
+const sendRevokeTokenMessage = (e) => {
   e.preventDefault();
   clearView();
   $('.loader').show();
-  chrome.runtime.sendMessage({directive: 'revoke_token'}, function (response) {
+  chrome.runtime.sendMessage({directive: 'revoke_token'}, (response) => {
     if (response.result === 'token_revoked') {
       onSuccessfulTokenRevocation();
     }
   });
 }
 
-function calculateExchangeRates() {
+const calculateExchangeRates = () =>{
   let exchangeRates;
   let amount = parseFloat($('#cb_amount').val());
   let selectedCurrency = $('#currencies_dropdown').children('option:selected').val().split('_')[1];
@@ -233,14 +233,14 @@ function calculateExchangeRates() {
     url: `https://coinbase.com/api/v2/exchange-rates?currency=${selectedCurrency}`,
     data: {token: coinbase_access_token},
     type: 'GET',
-  }).done(function (response) {
+  }).done((response) => {
     exchangeRates = response.data.rates;
     let convertedAmount = (parseFloat(amount) * parseFloat(exchangeRates['USD'])).toFixed(2);
     $('#cb_converted_amount').text(`${amount} ${selectedCurrency} is about ${convertedAmount} USD`);
   });
 }
 
-window.onload = $(function () {
+window.onload = $(() => {
   randomlyGenerateFormMessage();
   $('#cb_signin').bind('click', sendSigninMessage);
   $('#cb_revoke_token_access_button').bind('click', sendRevokeTokenMessage);
