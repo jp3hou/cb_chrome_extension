@@ -19,6 +19,15 @@ chrome.storage.local.get(['coinbase_access_token', 'coinbase_refresh_token'], (r
   }
 });
 
+const ajaxRequest = (type, url, data = {}, headers = {}) => {
+  headers = {
+    ...headers,
+    'Authorization': `Bearer ${coinbase_access_token}`,
+    'CB-VERSION': CB_VERSION,
+  };
+
+  return $.ajax({ url, type, data, headers });
+}
 const showSigninView = () => {
   $('#cb_submit_transaction_container').hide();
   $('#cb_signin_container').show();
@@ -31,43 +40,40 @@ const randomlyGenerateFormMessage = () => {
 
 const sendTransactionCurried = (account_id, currency, address, amount, description, idem) => {
   return (two_factor_token) => {
-    let headers = {
-      'Authorization': `Bearer ${coinbase_access_token}`,
-      'CB-VERSION': CB_VERSION,
-    };
+    let headers = {};
 
     if (two_factor_token) {
       headers['CB-2FA-TOKEN'] = two_factor_token
     }
 
-    return $.ajax({
-      url: `https://api.coinbase.com/v2/accounts/${account_id}/transactions`,
-      data: { type: 'send', to: address, amount, description, currency, idem },
-      type: 'POST',
-      headers: headers
-    });
+    return ajaxRequest(
+      'POST',
+      `https://api.coinbase.com/v2/accounts/${account_id}/transactions`,
+      { type: 'send', to: address, amount, description, currency, idem },
+      headers,
+    );
   }
 }
 
 // "freeze" the account id, currency, address, amount, description, and idem values in a partial function that is
 // called twice, first without and then with a 2 factor authorization token in the headers
 const setPartialTransactionFunction = () => {
-  let account_id, currency;
-  [account_id, currency] = $('#currencies_dropdown').children('option:selected').val().split('_');
-  let address = $('#cb_recipient_address').val();
-  let amount = $('#cb_amount').val();
-  let description = $('#cb_trx_note').val();
-  let idem = `cb_extension_${Date.now()}`;
+  let [account_id, currency] = $('#currencies_dropdown').children('option:selected').val().split('_');
 
-  partialTransactionFunction = sendTransactionCurried(account_id, currency, address, amount, description, idem);
+  partialTransactionFunction = sendTransactionCurried(
+    account_id,
+    currency,
+    $('#cb_recipient_address').val(),
+    $('#cb_amount').val(),
+    $('#cb_trx_note').val(),
+    `cb_extension_${Date.now()}`,
+  );
 }
 
 const isValidInput = () => {
-  [account_id, currency] = $('#currencies_dropdown').children('option:selected').val().split('_');
-  let address = $('#cb_recipient_address').val();
-  let amount = $('#cb_amount').val();
+  let [account_id, currency] = $('#currencies_dropdown').children('option:selected').val().split('_');
 
-  return account_id && currency && address && amount;
+  return account_id && currency && $('#cb_recipient_address').val() && $('#cb_amount').val();
 }
 
 const submit2FACode = async (e) => {
@@ -126,7 +132,6 @@ const clearView = () => {
   $('#cb_submit_transaction_container').hide();
   $('#cb_2fa_verification_container').hide();
   $('.loader').hide();
-
 }
 
 const onSuccessfulTokenRevocation = () => {
@@ -146,14 +151,7 @@ const clearTokens = () => {
 
 const getAccounts = async () => {
   try {
-    let response = await $.ajax({
-      url: 'https://api.coinbase.com/v2/accounts',
-      type: 'GET',
-      headers: {
-        'Authorization': `Bearer ${coinbase_access_token}`,
-        'CB-VERSION': CB_VERSION,
-      }
-    });
+    let response = await ajaxRequest('GET', 'https://api.coinbase.com/v2/accounts');
 
     let currencies = response.data;
 
@@ -182,7 +180,7 @@ const showTransactionForm = () => {
 
 const sendSigninMessage = (e) => {
   e.preventDefault();
-  chrome.runtime.sendMessage({directive: 'initiate_oauth'});
+  chrome.runtime.sendMessage({ directive: 'initiate_oauth' });
 }
 
 const sendRefreshTokenMessage = (e) => {
@@ -190,7 +188,7 @@ const sendRefreshTokenMessage = (e) => {
   clearView();
   $('.loader').show();
 
-  chrome.runtime.sendMessage({directive: 'refresh_token'}, (response) => {
+  chrome.runtime.sendMessage({ directive: 'refresh_token' }, (response) => {
     if (response.result === 'token_refreshed') {
       coinbase_access_token = response.access_token;
       coinbase_refresh_token = response.refresh_token;
@@ -215,14 +213,14 @@ const sendRevokeTokenMessage = (e) => {
   e.preventDefault();
   clearView();
   $('.loader').show();
-  chrome.runtime.sendMessage({directive: 'revoke_token'}, (response) => {
+  chrome.runtime.sendMessage({ directive: 'revoke_token' }, (response) => {
     if (response.result === 'token_revoked') {
       onSuccessfulTokenRevocation();
     }
   });
 }
 
-const calculateExchangeRates = async () =>{
+const calculateExchangeRates = async () => {
   let exchangeRates;
   let amount = parseFloat($('#cb_amount').val());
   let selectedCurrency = $('#currencies_dropdown').children('option:selected').val().split('_')[1];
@@ -230,11 +228,10 @@ const calculateExchangeRates = async () =>{
     return $('#cb_converted_amount').text('');
   }
 
-  let response = await $.ajax({
-    url: `https://coinbase.com/api/v2/exchange-rates?currency=${selectedCurrency}`,
-    data: {token: coinbase_access_token},
-    type: 'GET',
-  });
+  let response = await ajaxRequest(
+    'GET',
+    `https://coinbase.com/api/v2/exchange-rates?currency=${selectedCurrency}`,
+  );
 
   exchangeRates = response.data.rates;
   let convertedAmount = (parseFloat(amount) * parseFloat(exchangeRates['USD'])).toFixed(2);
