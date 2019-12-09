@@ -12,13 +12,6 @@ let coinbase_access_token;
 let coinbase_refresh_token;
 let partialTransactionFunction;
 
-chrome.storage.local.get(['coinbase_access_token', 'coinbase_refresh_token'], (result) => {
-  if (!chrome.runtime.lastError) {
-    coinbase_access_token = result.coinbase_access_token;
-    coinbase_refresh_token = result.coinbase_refresh_token;
-  }
-});
-
 const ajaxRequest = (type, url, data = {}, headers = {}) => {
   headers = {
     ...headers,
@@ -29,7 +22,8 @@ const ajaxRequest = (type, url, data = {}, headers = {}) => {
   return $.ajax({ url, type, data, headers });
 }
 const showSigninView = () => {
-  $('#cb_submit_transaction_container').hide();
+  $('#cb_signin').bind('click', sendSigninMessage);
+  clearView();
   $('#cb_signin_container').show();
 }
 
@@ -168,8 +162,7 @@ const getAccounts = async () => {
       $('#cb_refresh_token_button').bind('click', sendRefreshTokenMessage).show();
       $('#cb_message_container').show();
     } else {
-      clearView();
-      $('#cb_signin_container').fadeIn(1000);
+      showSigninView();
     }
   }
 }
@@ -238,18 +231,24 @@ const calculateExchangeRates = async () => {
   $('#cb_converted_amount').text(`${amount} ${selectedCurrency} is about ${convertedAmount} USD`);
 }
 
-window.onload = $(() => {
+const initialize = () => {
   randomlyGenerateFormMessage();
-  $('#cb_signin').bind('click', sendSigninMessage);
   $('#cb_revoke_token_access_button').bind('click', sendRevokeTokenMessage);
   $('#cb_submit_transaction_button').bind('click', sendTransaction);
   $('#cb_amount').keyup(calculateExchangeRates);
   $('#currencies_dropdown').change(calculateExchangeRates);
+  $('.loader').show();
+  getAccounts();
+}
 
-  if (coinbase_access_token !== undefined) {
-    $('.loader').show();
-    getAccounts();
-  } else {
-    showSigninView();
-  }
+window.onload = $(() => {
+  chrome.storage.local.get(['coinbase_access_token', 'coinbase_refresh_token'], (result) => {
+    if (result.coinbase_access_token === undefined) {
+      showSigninView();
+    } else {
+      coinbase_access_token = result.coinbase_access_token;
+      coinbase_refresh_token = result.coinbase_refresh_token;
+      initialize();
+    }
+  });
 });
