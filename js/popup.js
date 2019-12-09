@@ -43,7 +43,7 @@ const sendTransactionCurried = (account_id, currency, address, amount, descripti
     let headers = {};
 
     if (two_factor_token) {
-      headers['CB-2FA-TOKEN'] = two_factor_token
+      headers['CB-2FA-TOKEN'] = two_factor_token;
     }
 
     return ajaxRequest(
