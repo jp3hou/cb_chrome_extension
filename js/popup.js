@@ -11,6 +11,7 @@ const CB_VERSION = '2018-10-09';
 let coinbase_access_token;
 let coinbase_refresh_token;
 let partialTransactionFunction;
+let selectedTab = 'Send';
 
 const ajaxRequest = (type, url, data = {}, headers = {}) => {
   headers = {
@@ -52,7 +53,7 @@ const sendTransactionCurried = (account_id, currency, address, amount, descripti
 // "freeze" the account id, currency, address, amount, description, and idem values in a partial function that is
 // called twice, first without and then with a 2 factor authorization token in the headers
 const setPartialTransactionFunction = () => {
-  let [account_id, currency] = $('#currencies_dropdown').children('option:selected').val().split('_');
+  let [account_id, currency] = $('#send_currencies_dropdown').children('option:selected').val().split('_');
 
   partialTransactionFunction = sendTransactionCurried(
     account_id,
@@ -65,7 +66,7 @@ const setPartialTransactionFunction = () => {
 }
 
 const isValidInput = () => {
-  let [account_id, currency] = $('#currencies_dropdown').children('option:selected').val().split('_');
+  let [account_id, currency] = $('#send_currencies_dropdown').children('option:selected').val().split('_');
 
   return account_id && currency && $('#cb_recipient_address').val() && $('#cb_amount').val();
 }
@@ -84,10 +85,10 @@ const submit2FACode = async (e) => {
     $('#cb_message_container').show();
   } catch (err) {
     clearView();
-    let html = $.parseHTML(`Error: ${err.responseJSON.errors[0].message}`);
+    let html = $.parseHTML(err.responseJSON.errors[0].message);
     $('#cb_message').text('').append(html);
     $('#cb_message_container').show().fadeOut(1500, () => {
-      $('#cb_submit_transaction_container').show();
+      showLoggedInContainer();
     });
   }
 }
@@ -109,10 +110,13 @@ const sendTransaction = async (e) => {
       if (response.status === 402) {
         $('#cb_submit_2fa_button').bind('click', submit2FACode);
         $('#cb_2fa_verification_container').show();
+        $('#cb_2fa_code').focus();
       } else {
-        let html = $.parseHTML(`Error: ${response.responseJSON.errors[0].message}`);
+        let html = $.parseHTML(response.responseJSON.errors[0].message);
         $('#cb_message').append(html);
-        $('#cb_message_container').show()
+        $('#cb_message_container').show().fadeOut(2000, () => {
+          showLoggedInContainer();
+        });
       }
     }
   } else {
@@ -123,7 +127,7 @@ const sendTransaction = async (e) => {
 const clearView = () => {
   $('#cb_signin_container').hide();
   $('#cb_message_container').hide();
-  $('#cb_submit_transaction_container').hide();
+  $('#cb_logged_in_container').hide();
   $('#cb_2fa_verification_container').hide();
   $('.loader').hide();
 }
@@ -151,10 +155,11 @@ const getAccounts = async () => {
 
     for (let i = 0; i < currencies.length - 1; i++) {
       let c = currencies[i];
-      $('#currencies_dropdown').append(`<option value="${c.id}_${c.balance.currency}">${c.balance.amount} ${c.balance.currency}</option>`);
+      $('#send_currencies_dropdown').append(`<option value="${c.id}_${c.balance.currency}">${c.balance.amount} ${c.balance.currency}</option>`);
+      $('#receive_currencies_dropdown').append(`<option value="${c.id}_${c.balance.currency}">${c.balance.currency}</option>`);
     }
     clearView();
-    showTransactionForm();
+    showLoggedInContainer();
   } catch (err) {
     clearView();
     if (err.status === 401 && coinbase_refresh_token) {
@@ -167,8 +172,30 @@ const getAccounts = async () => {
   }
 }
 
-const showTransactionForm = () => {
-  $('#cb_submit_transaction_container').show();
+const generateNewAddress = async (account_id) => {
+  let response = await ajaxRequest('POST', `https://api.coinbase.com/v2/accounts/${account_id}/addresses`);
+
+  return response.data.address;
+}
+
+const showLoggedInContainer = () => {
+  $('#cb_logged_in_container').show();
+  if (selectedTab === 'Send') {
+    $('#cb_receive_container').hide();
+    $('#cb_receive_tab').removeClass('active_tab').addClass('inactive_tab');
+    $('#cb_send_tab').removeClass('inactive_tab').addClass('active_tab');
+    $('#cb_send_container').show();
+  } else if (selectedTab === 'Receive') {
+    $('#cb_send_container').hide();
+    $('#cb_send_tab').removeClass('active_tab').addClass('inactive_tab');
+    $('#cb_receive_tab').removeClass('inactive_tab').addClass('active_tab');
+    $('#cb_receive_container').show();
+  }
+}
+
+const switchTabs = (tab) => {
+  selectedTab = tab;
+  showLoggedInContainer();
 }
 
 const sendSigninMessage = (e) => {
@@ -216,7 +243,7 @@ const sendRevokeTokenMessage = (e) => {
 const calculateExchangeRates = async () => {
   let exchangeRates;
   let amount = parseFloat($('#cb_amount').val());
-  let selectedCurrency = $('#currencies_dropdown').children('option:selected').val().split('_')[1];
+  let selectedCurrency = $('#send_currencies_dropdown').children('option:selected').val().split('_')[1];
   if (!selectedCurrency || !amount) {
     return $('#cb_converted_amount').text('');
   }
@@ -236,7 +263,9 @@ const initialize = () => {
   $('#cb_revoke_token_access_button').bind('click', sendRevokeTokenMessage);
   $('#cb_submit_transaction_button').bind('click', sendTransaction);
   $('#cb_amount').keyup(calculateExchangeRates);
-  $('#currencies_dropdown').change(calculateExchangeRates);
+  $('#send_currencies_dropdown').change(calculateExchangeRates);
+  $('#cb_send_tab').bind('click', () => { switchTabs('Send') });
+  $('#cb_receive_tab').bind('click', () => { switchTabs('Receive') });
   $('.loader').show();
   getAccounts();
 }

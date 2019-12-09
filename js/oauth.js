@@ -23,7 +23,7 @@ const signIn = () => {
   $('.loader').show();
 
   let url = `https://www.coinbase.com/oauth/authorize?client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}` +
-    '&response_type=code&scope=wallet:accounts:read,wallet:transactions:send&meta[send_limit_amount]=1&meta[send_limit_currency]=USD&meta[send_limit_period]=day';
+    '&response_type=code&scope=wallet:accounts:read,wallet:addresses:create,wallet:transactions:send&meta[send_limit_amount]=1&meta[send_limit_currency]=USD&meta[send_limit_period]=day';
   chrome.identity.launchWebAuthFlow(
     {
       'url': url,
@@ -99,7 +99,7 @@ const refreshToken = async (request, sender, sendResponse) => {
 const revokeToken = async (request, sender, sendResponse) => {
   await $.ajax({
     url: 'https://api.coinbase.com/oauth/revoke',
-    data: {token: coinbase_access_token},
+    data: { token: coinbase_access_token },
     type: 'POST',
     headers: { 'Authorization': `Bearer ${coinbase_access_token}` }
   });

@@ -26,29 +26,47 @@
     <button id="cb_submit_2fa_button">Submit Code</button>
   </div>
 
-  <div id="cb_submit_transaction_container" style="display: none;">
-    <div id="cb_submission_form_header">
-      <h1 id="cb_submission_form_message"></h1>
+  <div class="cb_container" id="cb_logged_in_container" style="display: none;">
+    <div id="cb_extension_tabs_container">
+      <div class="cb_extension_tab" id="cb_send_tab">
+        Send
+      </div>
+      <div class="cb_extension_tab" id="cb_receive_tab">
+        Receive
+      </div>
     </div>
-
-    <div id="cb_accounts_link_container">
-      <a id="cb_accounts_link" href="https://www.coinbase.com/accounts" target="_blank">See your wallet contents here</a>
-    </div>
-
-    <form id="cb_submit_transaction_form" method="post">
-      <input id="cb_recipient_address" type="text" placeholder="Email or Hash Address">
-      <input id="cb_amount" type="text" placeholder="Amount">
-      <div id="cb_converted_amount"></div>
-      <select title="currencies" id="currencies_dropdown">
+    <div class="cb_container" id="cb_receive_container" style="display: none;">
+      <select title="currencies" id="receive_currencies_dropdown">
         <option value="" disabled selected>Select an account</option>
       </select>
-      <input id="cb_trx_note" type="text" placeholder="Add a note! (Optional)">
-      <div id="cb_submit_error_container">
-        <div id="cb_submit_error_message"></div>
+
+      <button id="cb_generate_new_address_button" type="submit">Generate New Address</button>
+    </div>
+
+    <div id="cb_send_container" style="display: none;">
+      <div id="cb_submission_form_header">
+        <h1 id="cb_submission_form_message"></h1>
       </div>
-      <button id="cb_submit_transaction_button" type="submit">Send</button>
-      <button id="cb_revoke_token_access_button">Revoke Token Access</button>
-    </form>
+
+      <div id="cb_accounts_link_container">
+        <a id="cb_accounts_link" href="https://www.coinbase.com/accounts" target="_blank">See your wallet contents here</a>
+      </div>
+
+      <form id="cb_submit_transaction_form" method="post">
+        <input id="cb_recipient_address" type="text" placeholder="Email or Hash Address">
+        <input id="cb_amount" type="text" placeholder="Amount">
+        <div id="cb_converted_amount"></div>
+        <select title="currencies" id="send_currencies_dropdown">
+          <option value="" disabled selected>Select an account</option>
+        </select>
+        <input id="cb_trx_note" type="text" placeholder="Add a note! (Optional)">
+        <div id="cb_submit_error_container">
+          <div id="cb_submit_error_message"></div>
+        </div>
+        <button id="cb_submit_transaction_button" type="submit">Send</button>
+        <button id="cb_revoke_token_access_button">Revoke Access Token</button>
+      </form>
+    </div>
   </div>
 </div>
 </body>
