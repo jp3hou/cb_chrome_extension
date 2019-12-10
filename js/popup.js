@@ -189,9 +189,10 @@ const getAccounts = async () => {
 };
 
 const generateNewAddress = async () => {
+  $('#cb_address_info').hide();
   $('#cb_receive_address').text('');
   $('#cb_receive_address_qr_code').text('');
-  $('#cb_address_asset_icon').hide();
+  $('#cb_address_asset_icon').attr("src", '');
 
   let account_id = $('#receive_currencies_dropdown').children('option:selected').val();
   let currency = $('#receive_currencies_dropdown').children('option:selected').text();
@@ -204,12 +205,13 @@ const generateNewAddress = async () => {
         $('#cb_address_asset_icon').attr("src", ASSET_ICONS[currency]).show();
       }
 
-      $('#cb_receive_address').text(response.data.address).show();
+      $('#cb_receive_address').text(response.data.address);
       new QRCode(document.getElementById('cb_receive_address_qr_code'), {
         text: response.data.address,
         width: 150,
         height: 150,
       });
+      $('#cb_address_info').show();
     }
     catch {
       $('#generate_address_loader').hide();

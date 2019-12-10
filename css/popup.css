@@ -93,20 +93,18 @@
 
 #cb_receive_address_container {
     height: 250px;
-    width: 100%;
     margin-bottom: 20px;
 }
 
 #cb_receive_address {
     margin-bottom: 20px;
-    width: 100%;
-    font-size: 16px;
+    font-size: 14px;
     text-align: center;
     font-family: Monaco, monospace;
 }
 
 .cb_main_tab {
-    flex-grow: 2;
+    flex-grow: 6;
 }
 
 .cb_small_tab {
@@ -114,7 +112,7 @@
 }
 
 #cb_gear_tab_icon {
-    height: 25px;
+    height: 20px;
 }
 
 #cb_accounts_link_container {
