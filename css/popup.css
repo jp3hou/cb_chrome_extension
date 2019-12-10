@@ -18,6 +18,12 @@
     cursor: pointer;
 }
 
+.asset_icon {
+    height: 50px;
+    width: 50px;
+    margin-bottom: 20px;
+}
+
 #cb_logo {
     width: 320px;
     margin-bottom: 35px;

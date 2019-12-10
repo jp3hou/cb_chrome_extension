@@ -15,7 +15,7 @@
   </div>
 
   <div class="cb_container" id="cb_message_container" style="display: none;">
-    <h1 id="cb_message"></h1>
+    <h2 id="cb_message"></h2>
     <button class="cb_button" id="cb_refresh_token_button" style="display: none;">Refresh Token</button>
   </div>
 
@@ -41,7 +41,9 @@
         <option value="" disabled selected>Select an account</option>
       </select>
       <div class="cb_container" id="cb_receive_address_container">
+        <h2 id="cb_generate_address_error" style="text-align: center; display: none;">Could not generate address. Please double-check the selected account</h2>
         <div class="loader" id="generate_address_loader" style="display: none;"></div>
+        <img class="asset_icon" id="cb_address_asset_icon" src="" style="display: none;"/>
         <div id="cb_receive_address"></div>
         <div id="cb_receive_address_qr_code"></div>
       </div>

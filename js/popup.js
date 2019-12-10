@@ -6,6 +6,21 @@ const HEADER_MESSAGES = [
   "Send your compliments to the chef!",
   "Give someone your 2 cents!"
 ];
+const ASSET_ICONS = {
+  '0x' : '/images/asset_icons/0x.png',
+  'BAT' : '/images/asset_icons/Basic-Attention-Token.png',
+  'BTC' : '/images/asset_icons/Bitcoin.png',
+  'BCH' : '/images/asset_icons/Bitcoin-Cash.png',
+  'LINK' : '/images/asset_icons/Chainlink.png',
+  'ETH' : '/images/asset_icons/Ethereum.png',
+  'ETC' : '/images/asset_icons/Ethereum-Classic.png',
+  'LTC' : '/images/asset_icons/Litecoin.png',
+  'XLM' : '/images/asset_icons/Stellar.png',
+  'XTZ' : '/images/asset_icons/Tezos.png',
+  'USDC' : '/images/asset_icons/USD-Coin.png',
+  'XRP' : '/images/asset_icons/XRP.png',
+  'ZEC' : '/images/asset_icons/Zcash.png',
+};
 const CB_VERSION = '2018-10-09';
 
 let coinbase_access_token;
@@ -176,18 +191,29 @@ const getAccounts = async () => {
 const generateNewAddress = async () => {
   $('#cb_receive_address').text('');
   $('#cb_receive_address_qr_code').text('');
+  $('#cb_address_asset_icon').hide();
 
   let account_id = $('#receive_currencies_dropdown').children('option:selected').val();
+  let currency = $('#receive_currencies_dropdown').children('option:selected').text();
   if (account_id) {
     $('#generate_address_loader').show();
-    let response = await ajaxRequest('POST', `https://api.coinbase.com/v2/accounts/${account_id}/addresses`);
-    $('#generate_address_loader').hide();
-    $('#cb_receive_address').text(response.data.address).show();
-    new QRCode(document.getElementById('cb_receive_address_qr_code'), {
-      text: response.data.address,
-      width: 200,
-      height: 200,
-    });
+    try {
+      let response = await ajaxRequest('POST', `https://api.coinbase.com/v2/accounts/${account_id}/addresses`);
+      $('#generate_address_loader').hide();
+      $('#cb_receive_address').text(response.data.address).show();
+      if (ASSET_ICONS[currency]) {
+        $('#cb_address_asset_icon').attr("src", ASSET_ICONS[currency]).show();
+      }
+      new QRCode(document.getElementById('cb_receive_address_qr_code'), {
+        text: response.data.address,
+        width: 150,
+        height: 150,
+      });
+    }
+    catch {
+      $('#generate_address_loader').hide();
+      $('#cb_generate_address_error').show().fadeOut(3000);
+    }
   } else {
     $('#cb_generate_address_error_message').text('Please select an account').show().fadeOut(3000);
   }
