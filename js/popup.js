@@ -151,7 +151,7 @@ const clearView = () => {
 const onSuccessfulTokenRevocation = () => {
   clearTokens();
   clearView();
-  $('#cb_message').text('Revoked!');
+  $('#cb_message').text('Logged Out!');
   $('#cb_message_container').show().fadeOut(1000, () => {
     $('#cb_signin_container').show();
   });
@@ -224,14 +224,25 @@ const showLoggedInContainer = () => {
   $('#cb_logged_in_container').show();
   if (selectedTab === 'Send') {
     $('#cb_receive_container').hide();
+    $('#cb_options_container').hide();
     $('#cb_receive_tab').removeClass('active_tab').addClass('inactive_tab');
+    $('#cb_options_tab').removeClass('active_tab').addClass('inactive_tab');
     $('#cb_send_tab').removeClass('inactive_tab').addClass('active_tab');
     $('#cb_send_container').show();
   } else if (selectedTab === 'Receive') {
     $('#cb_send_container').hide();
+    $('#cb_options_container').hide();
     $('#cb_send_tab').removeClass('active_tab').addClass('inactive_tab');
+    $('#cb_options_tab').removeClass('active_tab').addClass('inactive_tab');
     $('#cb_receive_tab').removeClass('inactive_tab').addClass('active_tab');
     $('#cb_receive_container').show();
+  } else if (selectedTab === 'Options') {
+    $('#cb_send_container').hide();
+    $('#cb_receive_container').hide();
+    $('#cb_send_tab').removeClass('active_tab').addClass('inactive_tab');
+    $('#cb_receive_tab').removeClass('active_tab').addClass('inactive_tab');
+    $('#cb_options_tab').removeClass('inactive_tab').addClass('active_tab');
+    $('#cb_options_container').show();
   }
 };
 
@@ -309,6 +320,7 @@ const initialize = () => {
   $('#send_currencies_dropdown').change(calculateExchangeRates);
   $('#cb_send_tab').bind('click', () => { switchTabs('Send') });
   $('#cb_receive_tab').bind('click', () => { switchTabs('Receive') });
+  $('#cb_options_tab').bind('click', () => { switchTabs('Options') });
   $('#cb_loader').show();
   getAccounts();
 };
