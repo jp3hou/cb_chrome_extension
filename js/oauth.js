@@ -16,7 +16,7 @@ const onReceivedRedirectUrl = (redirect_url) => {
   if (!chrome.runtime.lastError) {
     validateRedirectUri(redirect_url);
   }
-}
+};
 
 const signIn = () => {
   $('#cb_signin_container').hide();
@@ -29,7 +29,7 @@ const signIn = () => {
       'url': url,
       'interactive': true
     }, onReceivedRedirectUrl);
-}
+};
 
 const onSuccessfulOAuthHandshake = (response) => {
   chrome.storage.local.set({
@@ -44,7 +44,7 @@ const onSuccessfulOAuthHandshake = (response) => {
     iconUrl: 'images/icon48.png',
     message: 'You have successfully signed into your Coinbase Account!'
   });
-}
+};
 
 const validateRedirectUri = async (redirect_uri) => {
   let regex = new RegExp(REDIRECT_URI);
@@ -69,7 +69,7 @@ const validateRedirectUri = async (redirect_uri) => {
       });
     }
   }
-}
+};
 
 const refreshToken = async (request, sender, sendResponse) => {
   try {
@@ -94,7 +94,7 @@ const refreshToken = async (request, sender, sendResponse) => {
   } catch (e) {
     sendResponse({ result: 'error_refreshing_token', responseJSON: e.responseJSON });
   }
-}
+};
 
 const revokeToken = async (request, sender, sendResponse) => {
   await $.ajax({
@@ -105,13 +105,13 @@ const revokeToken = async (request, sender, sendResponse) => {
   });
   removeTokens();
   sendResponse({ result: 'token_revoked' });
-}
+};
 
 const removeTokens = () => {
   chrome.storage.local.remove(['coinbase_access_token', 'coinbase_refresh_token']);
   coinbase_access_token = undefined;
   coinbase_refresh_token = undefined;
-}
+};
 
 chrome.runtime.onMessage.addListener(
   (request, sender, sendResponse) => {

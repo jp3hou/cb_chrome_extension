@@ -2,6 +2,7 @@
 <html>
 <head>
   <script src="js/jquery-3.4.1.min.js"></script>
+  <script src="js/qrcode.min.js"></script>
   <script src="js/popup.js"></script>
   <link rel="stylesheet" text="text/css" href="css/popup.css">
 </head>
@@ -9,21 +10,21 @@
 <div id="cb_extension_container">
   <div class="cb_container" id="cb_signin_container" style="display: none;">
     <img id="cb_logo" src="images/coinbase_light.png">
-    <button id="cb_signin">Sign in</button>
+    <button class="cb_button" id="cb_signin">Sign in</button>
     <h3>(This will pop open a signin page)</h3>
   </div>
 
   <div class="cb_container" id="cb_message_container" style="display: none;">
     <h1 id="cb_message"></h1>
-    <button id="cb_refresh_token_button" style="display: none;">Refresh Token</button>
+    <button class="cb_button" id="cb_refresh_token_button" style="display: none;">Refresh Token</button>
   </div>
 
-  <div class="loader" style="display: none;">Loading...</div>
+  <div class="loader" id="cb_loader" style="display: none;"></div>
 
   <div class="cb_container" id="cb_2fa_verification_container" style="display: none;">
     <h1>Please input your 2 factor authentication code</h1>
     <input id="cb_2fa_code" type="text" placeholder="2FA Code">
-    <button id="cb_submit_2fa_button">Submit Code</button>
+    <button class="cb_button" id="cb_submit_2fa_button">Submit Code</button>
   </div>
 
   <div class="cb_container" id="cb_logged_in_container" style="display: none;">
@@ -39,8 +40,15 @@
       <select title="currencies" id="receive_currencies_dropdown">
         <option value="" disabled selected>Select an account</option>
       </select>
-
-      <button id="cb_generate_new_address_button" type="submit">Generate New Address</button>
+      <div class="cb_container" id="cb_receive_address_container">
+        <div class="loader" id="generate_address_loader" style="display: none;"></div>
+        <div id="cb_receive_address"></div>
+        <div id="cb_receive_address_qr_code"></div>
+      </div>
+      <div class="cb_error_message_container">
+        <div class="cb_error_message" id="cb_generate_address_error_message"></div>
+      </div>
+      <button class="cb_button" id="cb_generate_new_address_button" type="submit">Generate New Address</button>
     </div>
 
     <div id="cb_send_container" style="display: none;">
@@ -60,11 +68,11 @@
           <option value="" disabled selected>Select an account</option>
         </select>
         <input id="cb_trx_note" type="text" placeholder="Add a note! (Optional)">
-        <div id="cb_submit_error_container">
-          <div id="cb_submit_error_message"></div>
+        <div class="cb_error_message_container">
+          <div class="cb_error_message" id="cb_submit_error_message"></div>
         </div>
-        <button id="cb_submit_transaction_button" type="submit">Send</button>
-        <button id="cb_revoke_token_access_button">Revoke Access Token</button>
+        <button class="cb_button" id="cb_submit_transaction_button" type="submit">Send</button>
+        <button class="cb_button" id="cb_revoke_token_access_button">Revoke Access Token</button>
       </form>
     </div>
   </div>

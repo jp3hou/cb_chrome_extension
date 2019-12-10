@@ -6,7 +6,7 @@
     justify-content: center;
 }
 
-#cb_extension_container button {
+.cb_button {
     width: 200px;
     height: 50px;
     color: #fff;
@@ -23,7 +23,7 @@
     margin-bottom: 35px;
 }
 
-#cb_extension_container button:active {
+.cb_button:active {
     box-shadow: 0 1px darkgray;
     transform: translateY(1px);
 }
@@ -38,6 +38,7 @@
     outline: none;
     padding-left: 10px;
 }
+
 #cb_converted_amount {
     margin-top: -20px;
     margin-bottom: 10px;
@@ -84,6 +85,20 @@
     text-decoration: none;
 }
 
+#cb_receive_address_container{
+    height: 250px;
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+#cb_receive_address {
+    margin-bottom: 20px;
+    width: 100%;
+    font-size: 16px;
+    text-align: center;
+    font-family: Monaco, monospace;
+}
+
 #cb_accounts_link_container {
     margin-bottom: 30px;
     text-align: center;
@@ -120,15 +135,15 @@
     align-items: center;
 }
 
-#cb_submit_error_container {
+.cb_error_message_container {
   height: 10px;
 }
 
-#cb_submit_error_message {
+.cb_error_message {
   color: orange;
 }
 
-#cb_receive_container select {
+#cb_logged_in_container select {
     width: 90%;
     height: 35px;
     margin-bottom: 20px;
@@ -141,20 +156,7 @@
     padding-left: 10px;
 }
 
-#cb_submit_transaction_form select {
-    width: 90%;
-    height: 35px;
-    margin-bottom: 20px;
-    font-size: 14px;
-    border-radius: 4px;
-    color: #777;
-    background-color: #fff;
-    border: 1px solid #ccc;
-    outline: none;
-    padding-left: 10px;
-}
-
-#cb_submit_transaction_form button {
+#cb_logged_in_container button {
     margin-top: 10px;
 }
 
