@@ -29,8 +29,7 @@ local storage.
 
 The access token expires every two hours, but you will have the option to refresh your credentials with the refresh token.
 
-You may revoke all token access at any time by clicking the "Revoke Token" button at the bottom of the transaction
-submission form.
+You may revoke all token access at any time by clicking the "Log Out" button in the Options tab.
 
 
 ## Setup
