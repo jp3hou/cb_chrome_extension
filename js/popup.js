@@ -200,10 +200,11 @@ const generateNewAddress = async () => {
     try {
       let response = await ajaxRequest('POST', `https://api.coinbase.com/v2/accounts/${account_id}/addresses`);
       $('#generate_address_loader').hide();
-      $('#cb_receive_address').text(response.data.address).show();
       if (ASSET_ICONS[currency]) {
         $('#cb_address_asset_icon').attr("src", ASSET_ICONS[currency]).show();
       }
+
+      $('#cb_receive_address').text(response.data.address).show();
       new QRCode(document.getElementById('cb_receive_address_qr_code'), {
         text: response.data.address,
         width: 150,
