@@ -104,7 +104,7 @@ const submit2FACode = async (e) => {
     let html = $.parseHTML(err.responseJSON.errors[0].message);
     $('#cb_message').text('').append(html);
     $('#cb_message_container').show().fadeOut(1500, () => {
-      showLoggedInContainer();
+      renderLoggedInContainer();
     });
   }
 };
@@ -131,7 +131,7 @@ const sendTransaction = async (e) => {
         let html = $.parseHTML(response.responseJSON.errors[0].message);
         $('#cb_message').append(html);
         $('#cb_message_container').show().fadeOut(2000, () => {
-          showLoggedInContainer();
+          renderLoggedInContainer();
         });
       }
     }
@@ -175,7 +175,7 @@ const getAccounts = async () => {
       $('#receive_currencies_dropdown').append(`<option value="${c.id}">${c.balance.currency}</option>`);
     }
     clearView();
-    showLoggedInContainer();
+    renderLoggedInContainer();
   } catch (err) {
     clearView();
     if (err.status === 401 && coinbase_refresh_token) {
@@ -222,7 +222,7 @@ const generateNewAddress = async () => {
   }
 };
 
-const showLoggedInContainer = () => {
+const renderLoggedInContainer = () => {
   $('#cb_logged_in_container').show();
   if (selectedTab === 'Send') {
     $('#cb_receive_container').hide();
@@ -250,7 +250,7 @@ const showLoggedInContainer = () => {
 
 const switchTabs = (tab) => {
   selectedTab = tab;
-  showLoggedInContainer();
+  renderLoggedInContainer();
 };
 
 const sendSigninMessage = (e) => {
