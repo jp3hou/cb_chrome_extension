@@ -179,7 +179,7 @@ const getAccounts = async () => {
   } catch (err) {
     clearView();
     if (err.status === 401 && coinbase_refresh_token) {
-      $('#cb_message').text(`Token invalid. Refresh Token?`);
+      $('#cb_message').text(`Your access token has expired. Refresh?`);
       $('#cb_refresh_token_button').bind('click', sendRefreshTokenMessage).show();
       $('#cb_message_container').show();
     } else {
