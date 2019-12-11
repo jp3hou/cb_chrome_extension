@@ -24,6 +24,14 @@
     margin-bottom: 20px;
 }
 
+.clickable {
+    cursor: pointer;
+}
+
+.centered_text {
+    text-align: center;
+}
+
 #cb_logo {
     width: 320px;
     margin-bottom: 35px;
@@ -63,13 +71,8 @@
 }
 
 #cb_message {
-    text-align: center;
     word-wrap: break-word;
     width: 100%;
-}
-
-#cb_2fa_verification_container {
-    text-align: center;
 }
 
 #cb_send_container {
@@ -79,10 +82,6 @@
     display: flex;
     flex-direction: column;
     justify-content: center;
-}
-
-#cb_submission_form_header {
-    text-align: center;
 }
 
 #cb_accounts_link {
@@ -99,7 +98,6 @@
 #cb_receive_address {
     margin-bottom: 20px;
     font-size: 14px;
-    text-align: center;
     font-family: Monaco, monospace;
 }
 
@@ -117,7 +115,6 @@
 
 #cb_accounts_link_container {
     margin-bottom: 30px;
-    text-align: center;
 }
 
 #cb_extension_tabs_container {
@@ -128,11 +125,6 @@
     font-size: 16px;
     padding-top: 5px;
     color: #708498;
-}
-
-.cb_extension_tab {
-    text-align: center;
-    cursor: pointer;
 }
 
 .active_tab {
@@ -153,7 +145,7 @@
     height: 350px;
 }
 
-.cb_error_message_container {
+.cb_info_message_container {
     height: 10px;
 }
 
@@ -175,6 +167,10 @@
 }
 
 #cb_logged_in_container button {
+    margin-top: 10px;
+}
+
+#cb_copied_address_message {
     margin-top: 10px;
 }
 

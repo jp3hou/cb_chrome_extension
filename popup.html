@@ -3,6 +3,7 @@
 <head>
   <script src="js/jquery-3.4.1.min.js"></script>
   <script src="js/qrcode.min.js"></script>
+  <script src="js/clipboard.min.js"></script>
   <script src="js/popup.js"></script>
   <link rel="stylesheet" text="text/css" href="css/popup.css">
 </head>
@@ -15,13 +16,13 @@
   </div>
 
   <div class="cb_container" id="cb_message_container" style="display: none;">
-    <h2 id="cb_message"></h2>
+    <h2 class="centered_text" id="cb_message"></h2>
     <button class="cb_button" id="cb_refresh_token_button" style="display: none;">Refresh Token</button>
   </div>
 
   <div class="loader" id="cb_loader" style="display: none;"></div>
 
-  <div class="cb_container" id="cb_2fa_verification_container" style="display: none;">
+  <div class="cb_container centered_text" id="cb_2fa_verification_container" style="display: none;">
     <h1>Please input your 2 factor authentication code</h1>
     <input id="cb_2fa_code" type="text" placeholder="2FA Code">
     <button class="cb_button" id="cb_submit_2fa_button">Submit Code</button>
@@ -29,22 +30,22 @@
 
   <div class="cb_container" id="cb_logged_in_container" style="display: none;">
     <div id="cb_extension_tabs_container">
-      <div class="cb_extension_tab cb_main_tab" id="cb_send_tab">
+      <div class="clickable centered_text cb_main_tab" id="cb_send_tab">
         Send
       </div>
-      <div class="cb_extension_tab cb_main_tab" id="cb_receive_tab">
+      <div class="clickable centered_text cb_main_tab" id="cb_receive_tab">
         Receive
       </div>
-      <div class="cb_extension_tab cb_small_tab" id="cb_options_tab">
+      <div class="clickable centered_text cb_small_tab" id="cb_options_tab">
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M24 13.616v-3.232c-1.651-.587-2.694-.752-3.219-2.019v-.001c-.527-1.271.1-2.134.847-3.707l-2.285-2.285c-1.561.742-2.433 1.375-3.707.847h-.001c-1.269-.526-1.435-1.576-2.019-3.219h-3.232c-.582 1.635-.749 2.692-2.019 3.219h-.001c-1.271.528-2.132-.098-3.707-.847l-2.285 2.285c.745 1.568 1.375 2.434.847 3.707-.527 1.271-1.584 1.438-3.219 2.02v3.232c1.632.58 2.692.749 3.219 2.019.53 1.282-.114 2.166-.847 3.707l2.285 2.286c1.562-.743 2.434-1.375 3.707-.847h.001c1.27.526 1.436 1.579 2.019 3.219h3.232c.582-1.636.75-2.69 2.027-3.222h.001c1.262-.524 2.12.101 3.698.851l2.285-2.286c-.744-1.563-1.375-2.433-.848-3.706.527-1.271 1.588-1.44 3.221-2.021zm-12 2.384c-2.209 0-4-1.791-4-4s1.791-4 4-4 4 1.791 4 4-1.791 4-4 4z"/></svg>
       </div>
     </div>
     <div id="cb_send_container" style="display: none;">
-      <div id="cb_submission_form_header">
+      <div class="centered_text" id="cb_submission_form_header">
         <h2 id="cb_submission_form_message"></h2>
       </div>
 
-      <div id="cb_accounts_link_container">
+      <div class="centered_text" id="cb_accounts_link_container">
         <a id="cb_accounts_link" href="https://www.coinbase.com/accounts" target="_blank">Check your balances</a>
       </div>
 
@@ -56,7 +57,7 @@
           <option value="" disabled selected>Select an account</option>
         </select>
         <input id="cb_trx_note" type="text" placeholder="Add a note! (Optional)">
-        <div class="cb_error_message_container">
+        <div class="cb_info_message_container">
           <div class="cb_error_message" id="cb_submit_error_message"></div>
         </div>
         <button class="cb_button" id="cb_submit_transaction_button" type="submit">Send</button>
@@ -72,14 +73,17 @@
         <div class="loader" id="generate_address_loader" style="display: none;"></div>
         <div class="cb_container" id="cb_address_info" style="display: none;">
           <img class="asset_icon" id="cb_address_asset_icon" src=""/>
-          <div id="cb_receive_address"></div>
-          <div id="cb_receive_address_qr_code"></div>
+          <div class="clickable centered_text" id="cb_receive_address"></div>
+          <div class="clickable" id="cb_receive_address_qr_code"></div>
         </div>
       </div>
-      <div class="cb_error_message_container">
+      <div class="cb_info_message_container">
         <div class="cb_error_message" id="cb_generate_address_error_message"></div>
       </div>
       <button class="cb_button" id="cb_generate_new_address_button" type="submit">Generate New Address</button>
+      <div class="cb_info_message_container">
+        <div class="centered_text" id="cb_copied_address_message" style="display: none;">Copied address to clipboard!</div>
+      </div>
     </div>
 
     <div class="cb_container" id="cb_options_container" style="display: none;">

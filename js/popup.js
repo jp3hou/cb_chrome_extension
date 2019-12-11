@@ -211,6 +211,7 @@ const generateNewAddress = async () => {
         width: 150,
         height: 150,
       });
+      registerCopyAddressClipboard();
       $('#cb_address_info').show();
     }
     catch {
@@ -311,6 +312,17 @@ const calculateExchangeRates = async () => {
   exchangeRates = response.data.rates;
   let convertedAmount = (parseFloat(amount) * parseFloat(exchangeRates['USD'])).toFixed(2);
   $('#cb_converted_amount').text(`${amount} ${selectedCurrency} is about ${convertedAmount} USD`);
+};
+
+const registerCopyAddressClipboard = () => {
+  let clipboard = new ClipboardJS(document.querySelectorAll('#cb_receive_address, #cb_receive_address_qr_code'), {
+    text: function() {
+      return $('#cb_receive_address').text();
+    }
+  });
+  clipboard.on('success', () => {
+    $('#cb_copied_address_message').show().fadeOut(3000);
+  });
 };
 
 const initialize = () => {
