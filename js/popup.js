@@ -155,7 +155,7 @@ const onSuccessfulTokenRevocation = () => {
   clearView();
   $('#cb_message').text('Logged Out!');
   $('#cb_message_container').show().fadeOut(1000, () => {
-    $('#cb_signin_container').show();
+    showSigninView();
   });
 };
 
@@ -181,9 +181,7 @@ const getAccounts = async () => {
   } catch (err) {
     clearView();
     if (err.status === 401 && coinbase_refresh_token) {
-      $('#cb_message').text(`Your access token has expired. Refresh?`);
-      $('#cb_refresh_token_button').bind('click', sendRefreshTokenMessage).show();
-      $('#cb_message_container').show();
+      sendRefreshTokenMessage()
     } else {
       showSigninView();
     }
@@ -271,11 +269,7 @@ const sendRefreshTokenMessage = (e) => {
       coinbase_access_token = response.access_token;
       coinbase_refresh_token = response.refresh_token;
       clearView();
-      $('#cb_refresh_token_button').hide();
-      $('#cb_message').text('Refreshed!');
-      $('#cb_message_container').show().fadeOut(1000, () => {
-        getAccounts();
-      });
+      getAccounts();
     } else if (response.result === 'error_refreshing_token') {
       clearView();
       $('#cb_message').text(`Error refreshing token. Try signing in again.`);
