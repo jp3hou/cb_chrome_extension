@@ -91,13 +91,16 @@
 }
 
 #cb_receive_address_container {
-    height: 250px;
-    margin-bottom: 20px;
+    margin-top: -15px;
+    height: 55%;
 }
 
 #cb_receive_address {
-    margin-bottom: 20px;
+    margin-top: 20px;
     font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 10px;
     font-family: Monaco, monospace;
 }
 
