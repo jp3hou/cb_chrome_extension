@@ -12,6 +12,8 @@ const ASSET_ICONS = {
   'BTC' : '/images/asset_icons/Bitcoin.png',
   'BCH' : '/images/asset_icons/Bitcoin-Cash.png',
   'LINK' : '/images/asset_icons/Chainlink.png',
+  'DAI' : '/images/asset_icons/DAI.png',
+  'DASH' : '/images/asset_icons/Dash.png',
   'ETH' : '/images/asset_icons/Ethereum.png',
   'ETC' : '/images/asset_icons/Ethereum-Classic.png',
   'LTC' : '/images/asset_icons/Litecoin.png',
