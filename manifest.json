@@ -1,6 +1,6 @@
 {
   "name": "Coinbase Send/Receive",
-  "version": "0.1",
+  "version": "0.0.2",
   "description": "Send and receive crypto payments easily as you browse the web",
   "author": "jpchou",
   "browser_action": {

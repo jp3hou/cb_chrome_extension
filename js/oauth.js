@@ -1,6 +1,6 @@
-const CLIENT_ID = 'd3a57b32056172fc74b8e46436ac08e3082aef663aaaf4f3ab6b396f882dcef7';
-const REDIRECT_URI = 'https://aliafefgjbgnlfcjhdklhieafeheaoaj.chromiumapp.org/redirect_uri';
-const CLIENT_SECRET = 'b7511f2e5aa9b3566bce12f767727bc52f41a40a0263bbbd53a37016061948e1';
+const CLIENT_ID = '712180e3f4f21ecdb1e516cb6db8d9b021182706aac90c75035f389a4d5768eb';
+const REDIRECT_URI = 'https://lmnobaefealkmcaejklodnfappbpenon.chromiumapp.org/redirect_uri';
+const CLIENT_SECRET = '3ee7057749ed043e3675244b6452479102cd52e5174947057f3c1173d63813d4';
 
 let coinbase_access_token;
 let coinbase_refresh_token;
